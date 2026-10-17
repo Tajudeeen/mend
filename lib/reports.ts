@@ -1,3 +1,4 @@
+import { fingerprint } from "./fingerprint.ts";
 import type { EventDoc, RecoveryReport } from "./model";
 export function recoveryReport(
   before: EventDoc,
@@ -42,6 +43,7 @@ export function recoveryReport(
     ],
     unknowns: o.metrics.unknowns,
     evidenceIds: p.evidenceIds,
+    fingerprint: fingerprint(before, after.plan),
     limitations: [
       after.mode === "demo"
         ? "Synthetic cultural data. This is a demonstration report."

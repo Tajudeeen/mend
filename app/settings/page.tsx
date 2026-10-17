@@ -26,7 +26,7 @@ export default function Settings() {
       <section className="page-heading">
         <div>
           <div className="eyebrow">ACCOUNT & CONNECTIONS</div>
-          <h1>A clear view of what’s connected.</h1>
+          <h1>Account & connections.</h1>
           <p>
             Credentials stay on the server. Sample data remains separate from
             live evidence.
@@ -64,6 +64,8 @@ export default function Settings() {
                     }),
                     d = (await r.json()) as { error?: string };
                   if (!r.ok) throw new Error(d.error);
+                  // Re-enter dispatch after the session changes.
+                  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
                   window.location.assign("/events");
                 } catch (e) {
                   setMessage((e as Error).message);

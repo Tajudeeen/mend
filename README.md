@@ -19,7 +19,9 @@ Source: https://github.com/Tajudeeen/mend
 - Performer/vendor withdrawal, rain, individual space closure, budget changes and declared offering substitution.
 - Versioned ordinal ranking and cultural continuity metrics with adjustable weights and bounded search.
 - Locked commitments, infeasibility/search-limit disclosure and conditional proposals for unknown terms.
-- Explicit approval, stale-proposal rejection, historical snapshots, before/after reports and exports.
+- Explicit approval, stale-proposal rejection, historical snapshots, approval-gated assignment restoration, before/after reports and exports.
+- Independent vendor proxy profiles and cultural/organizer-tag coverage fingerprints.
+- A local paired manual/MEND trial instrument at `/study`, with raw timing and failed-attempt exports.
 - Qloo search, tags, discovery, fixed-pool Insights, response receipts and explainability adapters.
 - Provider-configurable language agent with typed tools, execution limits and source-checked cultural statements.
 - Ownership checks, request limits, timeouts, bounded retries, transactional persistence and database RLS.
@@ -57,7 +59,9 @@ For the Sites compatibility target, its supported installer/build/source workflo
 
 Raw Qloo affinities are never averaged across independent query contexts. MEND converts each fixed audience/domain pool into fractional midranks, then aggregates those ordinal values with disclosed weights. Continuity measures displacement from the approved reference rank vector. These are MEND planning heuristics, not official Qloo scores or calibrated outcomes. Missing evidence remains missing. A bounded search reports truncation and does not imply optimality or a proof of infeasibility when truncated.
 
-Qloo entity resolution does not verify that a performer is available or that a restaurant will vend at the event. Unknown fees/terms make an option conditional. Live approval requires confirmation. Proxy profile support and broader market feasibility remain explicit follow-up work.
+Qloo entity resolution does not verify that a performer is available or that a restaurant will vend at the event. Unknown fees/terms make an option conditional. Live approval requires confirmation. Independent vendors can use one to three explicit, reverified place references with an organizer rationale. Proxy use is labeled in fingerprints and reports. Live proxy quality and broader market feasibility remain unverified.
+
+The 0.3 interface uses a poster landing, an actual running-order production desk and a compact participant register. See `docs/RELEASE_0.3.md`. The bundled display font is a renamed condensed derivative of DejaVu Sans Bold; notices are retained in `docs/FONT_LICENSE.txt`.
 
 ## Judge walkthrough
 

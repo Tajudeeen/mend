@@ -8,14 +8,16 @@ Source of requirements: `docs/product-spec.md`, recovered from the supplied shar
 | 1 Qloo feasibility | Blocked on Qloo key | Experiment and real market coverage not run |
 | 2 Core model | Implemented, production transaction gate open | Configurable events/participants/zones/slots, normalized PostgreSQL model and historical revisions; hosted schema applied |
 | 3 Planner | Implemented for bounded cases | Constraints, locks, conditional terms, search truncation, allocation tests |
-| 4 Cultural engine | Partial | Fixed-context rank-v2, receipts, tags/discovery adapters; no verified live influence, vendor proxy workflow remains |
+| 4 Cultural engine | Partial | Fixed-context rank-v2, explicit place-proxy profiles, receipts, fingerprint/coverage and tags/discovery adapters; no verified live influence or real-market proxy validation |
 | 5 Agent | Implemented and mocked-provider tested | Typed registry, 8 model steps / 16 tool calls, validated claims; live provider needed |
-| 6 Interface | Implemented, browser gate open | Landing, sample, event setup, studio, roster, floorplan, scenarios, decisions, reports and settings |
+| 6 Interface | Implemented, browser gate open | Poster landing, running-order desk, participant register, floorplan, scenarios, evidence, versions, reports, settings and trial instrument |
 | 7 Recovery | Implemented for bounded cases | Participant/vendor exit, individual zone loss, rain, budget, declared offering alternatives, approval and reports |
 | 8 Benchmark | Partial | 20 synthetic scenarios, 40 rules/rank runs; live-Qloo and LLM-only comparisons not run |
-| 9 Production QA | Partial | 35 domain/adapter/component/navigation tests, Worker smoke, RLS advisor, ownership checks; browser, deployed auth and PostgreSQL application tests remain |
+| 9 Production QA | Partial | 44 domain/adapter/component/navigation/trial tests, Worker smoke, RLS advisor, ownership checks; browser, deployed auth and PostgreSQL application tests remain |
 | 10 Deployment | Partial | Sites compatibility URL works; Vercel environment setup blocked by team-scope authorization |
 | 11 Submission | Incomplete | Public repository visibility, live evidence, screenshots, impact study and final judge verification remain |
+
+See `RELEASE_0.3.md` for this release’s implementation details and limitations.
 
 ## Deliberate limits
 
@@ -24,6 +26,6 @@ Source of requirements: `docs/product-spec.md`, recovered from the supplied shar
 - Physical dimensions are planning inputs. No regulatory or architectural certification is implied.
 - Declared offering alternatives use organizer inventory. No dish-level Qloo expertise is claimed.
 - Analysis Compare remains optional pending access and a validated need.
-- Independent vendor proxies, tag-coverage continuity and richer cultural fingerprints need live feasibility results before they can be responsibly finished.
+- Vendor place proxies and organizer-tag coverage are implemented and contract-tested. Their practical quality still needs live feasibility and organizer evaluation. Brand proxies and graph-relationship fingerprints remain future extensions.
 - Existing D1 event identities differ from Supabase identities. A verified migration/linking flow is required before moving existing saved data.
 - Real bookings, payments, ticketing and outbound messaging are post-hackathon scope.

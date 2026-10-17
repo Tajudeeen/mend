@@ -2,6 +2,11 @@
 
 import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
+import ProductionDesk from "@/components/mend/production-desk";
+import CulturalFingerprint from "@/components/mend/cultural-fingerprint";
+import VendorProfile from "@/components/mend/vendor-profile";
+import RevisionHistory from "@/components/mend/revision-history";
+import { proposeRestoration } from "@/lib/restoration";
 import { useEffect, useState, useCallback } from "react";
 import {
   ArrowUpRight,
@@ -15,7 +20,6 @@ import {
   Plus,
   ChevronDown,
   MapPin,
-  CalendarDays,
   Music2,
   Utensils,
   CloudRain,
@@ -27,7 +31,6 @@ import {
   Loader2,
   Leaf,
   Radio,
-  Zap,
   Clock,
   AlertCircle,
   CheckCircle2,
@@ -56,13 +59,14 @@ import { sampleEvent } from "@/lib/seed";
 import { effective } from "@/lib/model";
 import { metrics, validate } from "@/lib/planner";
 const views = [
-  { id: "overview", name: "Overview", icon: LayoutDashboard },
+  { id: "overview", name: "Production desk", icon: LayoutDashboard },
   { id: "brief", name: "Event brief", icon: SlidersHorizontal },
   { id: "lineup", name: "Lineup & vendors", icon: Users },
   { id: "site", name: "Site plan", icon: Map },
   { id: "repair", name: "Repair studio", icon: Waypoints },
   { id: "evidence", name: "Evidence & decisions", icon: ShieldCheck },
   { id: "reports", name: "Recovery reports", icon: Download },
+  { id: "history", name: "Versions", icon: Clock },
 ];
 type ApiResponse = {
   event?: EventDoc;
@@ -385,6 +389,7 @@ export default function Workspace({
       sampleEvent("00000000-0000-4000-8000-000000000001"),
     ),
     [audit, setAudit] = useState<Audit[]>([]),
+    [historyDocs, setHistoryDocs] = useState<EventDoc[]>([]),
     [persisted, setPersisted] = useState(demo),
     [view, setView] = useState(initialView),
     [busy, setBusy] = useState(""),
@@ -443,6 +448,16 @@ export default function Workspace({
     const u = new URL(location.href);
     const v = u.searchParams.get("view");
     if (views.some((x) => x.id === v)) setView(v!);
+    const incident = u.searchParams.get("incident");
+    if (demo && incident) {
+      if (incident === "rain") setScenario({ type: "rain" });
+      else if (incident === "budget")
+        setScenario({ type: "budget", budget: 5000 });
+      else if (incident === "closure")
+        setScenario({ type: "closure", zoneId: "main" });
+      else if (incident === "cancellation")
+        setScenario({ type: "cancellation", candidateId: "a1" });
+    }
     function pop() {
       setView(new URL(location.href).searchParams.get("view") ?? "overview");
     }
@@ -474,19 +489,42 @@ export default function Workspace({
         if (action === "create") {
           setDoc(sampleEvent());
           setAudit([]);
+          setHistoryDocs([]);
           return { event: doc } as ApiResponse;
         }
         if (
-          ["search", "resolve", "evidence", "clearSeeds", "mode"].includes(
-            action,
-          )
+          [
+            "search",
+            "resolve",
+            "evidence",
+            "clearSeeds",
+            "mode",
+            "vendorProfile",
+          ].includes(action)
         )
           throw new Error(
             "Live cultural operations require your saved workspace and configured credentials.",
           );
-        const result = applyCommand(doc, action, extra);
+        const historical =
+          action === "restoreRevision"
+            ? historyDocs.find((r) => r.revision === extra.targetRevision)
+            : undefined;
+        if (action === "restoreRevision" && !historical)
+          throw new Error(
+            "Historical revision not found in this sample session.",
+          );
+        const result = historical
+          ? proposeRestoration(doc, historical)
+          : applyCommand(doc, action, extra);
         result.event.revision = doc.revision + 1;
         setDoc(result.event);
+        setHistoryDocs((rows) =>
+          [
+            result.event,
+            doc,
+            ...rows.filter((r) => r.revision !== doc.revision),
+          ].slice(0, 100),
+        );
         setAudit((a) => [
           {
             id: crypto.randomUUID(),
@@ -564,6 +602,13 @@ export default function Workspace({
         <Link href="/" className="brand" aria-label="MEND home">
           <MendMark />
         </Link>
+        <button
+          className="desk-nav-close"
+          aria-label="Close navigation"
+          onClick={() => setMobile(false)}
+        >
+          <X size={20} />
+        </button>
         <div className="workspace-label">THE ORGANIZER&apos;S WORKSPACE</div>
         <div className="event-switch">
           <button onClick={() => setMenu(!menu)}>
@@ -609,21 +654,16 @@ export default function Workspace({
             >
               <v.icon size={18} />
               {v.name}
-              {v.id === "repair" && <span className="nav-tag">TRY IT</span>}
             </button>
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-note">
-            <div className="note-orbit">
-              <Waypoints size={20} />
-            </div>
-            <p>
-              A change of plan.
-              <br />
-              The same good feeling.
-            </p>
-            <span>Thoughtful recovery starts here.</span>
+          <div className="sidebar-note desk-sidebar-note">
+            <span>PRODUCTION RULE NO. 01</span>
+            <p>A proposal needs a person.</p>
+            <small>
+              Review every change before it reaches the active plan.
+            </small>
           </div>
           <div className="account">
             <span className="avatar">{demo ? "D" : "M"}</span>
@@ -647,7 +687,7 @@ export default function Workspace({
             >
               <Menu size={21} />
             </button>
-            <span>Workspace</span>
+            <span>Production</span>
             <span className="slash">/</span>
             <span>{views.find((v) => v.id === view)?.name}</span>
           </div>
@@ -729,73 +769,7 @@ export default function Workspace({
           )}
           {view === "overview" && (
             <>
-              <section className="page-heading">
-                <div>
-                  <div className="eyebrow">
-                    GOOD CULTURE. BETTER CONNECTIONS.
-                  </div>
-                  <h1>
-                    Keep the feeling.
-                    <br />
-                    <em>Repair the plan.</em>
-                  </h1>
-                  <p>
-                    Your event has a point of view. Let&apos;s keep it that way.
-                  </p>
-                </div>
-                <button className="btn" onClick={() => navigate("repair")}>
-                  Open repair studio <ArrowUpRight size={16} />
-                </button>
-              </section>
-              <section className="event-hero">
-                <div className="hero-text">
-                  <span className="pill">THE NEXT GATHERING</span>
-                  <h2>{doc.brief.name}</h2>
-                  <p>{doc.brief.description}</p>
-                  <div className="hero-meta">
-                    <span>
-                      <MapPin size={14} />
-                      {doc.brief.city}
-                    </span>
-                    <span>
-                      <CalendarDays size={14} />
-                      {new Date(
-                        doc.brief.date + "T12:00:00",
-                      ).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
-                    <span>
-                      <Users size={14} />
-                      {doc.brief.attendees} guests
-                    </span>
-                  </div>
-                  <button onClick={() => navigate("brief")}>
-                    Shape your event <ArrowRight size={16} />
-                  </button>
-                </div>
-                <div className="hero-art" aria-hidden="true">
-                  <div className="orbit one" />
-                  <div className="orbit two" />
-                  <div className="orbit three" />
-                  <div className="art-flower">
-                    {[0, 1, 2, 3, 4, 5].map((i) => (
-                      <i
-                        key={i}
-                        style={{
-                          transform: `rotate(${i * 60}deg) translateY(-49px)`,
-                        }}
-                      />
-                    ))}
-                    <span />
-                  </div>
-                  <div className="art-label">
-                    SOUNDS • TASTES • SHARED SPACES
-                  </div>
-                </div>
-              </section>
+              <ProductionDesk doc={doc} navigate={navigate} />
               <section className="stats">
                 <div>
                   <span>Program & market</span>
@@ -812,7 +786,7 @@ export default function Workspace({
                   </p>
                 </div>
                 <div>
-                  <span>Planning budget</span>
+                  <span>Known participant fees</span>
                   <strong>
                     {money(m.cost)}
                     <small> / {money(rules.budget)}</small>
@@ -842,15 +816,25 @@ export default function Workspace({
                   <p>Ordinal preference ranks, not an attendance forecast</p>
                 </div>
                 <div>
-                  <span>Operational checks</span>
+                  <span>Supplied operational checks</span>
                   <strong>
-                    {violations.length ? "Review needed" : "All clear"}
-                    <ShieldCheck size={22} />
+                    {violations.length
+                      ? "Review needed"
+                      : m.unknowns.length
+                        ? "Conditional"
+                        : "Passed"}
+                    {violations.length || m.unknowns.length ? (
+                      <AlertCircle size={22} />
+                    ) : (
+                      <ShieldCheck size={22} />
+                    )}
                   </strong>
                   <p>
                     {violations.length
                       ? violations[0]
-                      : "Budget, availability, site capacity & power"}
+                      : m.unknowns.length
+                        ? "Unconfirmed terms remain. Review the roster."
+                        : "Checks use the supplied event facts."}
                   </p>
                 </div>
               </section>
@@ -858,8 +842,8 @@ export default function Workspace({
                 <section className="panel">
                   <div className="panel-head">
                     <div>
-                      <span className="eyebrow">A PLACE FOR EVERYTHING</span>
-                      <h3>Your gathering, mapped.</h3>
+                      <span className="eyebrow">SITE / ALLOCATION</span>
+                      <h3>Site overview.</h3>
                     </div>
                     <button
                       className="icon-btn"
@@ -891,9 +875,9 @@ export default function Workspace({
                   <div className="panel-head">
                     <div>
                       <span className="eyebrow">
-                        MORE THAN ONE KIND OF GOOD TASTE
+                        AUDIENCE / ORDINAL COVERAGE
                       </span>
-                      <h3>Everyone has a place.</h3>
+                      <h3>Audience balance.</h3>
                     </div>
                   </div>
                   <p>
@@ -946,7 +930,7 @@ export default function Workspace({
             <>
               <Heading
                 eyebrow="START WITH THE INTENTION"
-                title="Make room for your people."
+                title="The event brief."
                 description="Set the brief. Give each audience a voice. Keep the practical limits clear."
               />
               <BriefEditor
@@ -968,7 +952,7 @@ export default function Workspace({
             <>
               <Heading
                 eyebrow="THE PEOPLE WHO MAKE IT"
-                title="A mix with a point of view."
+                title="The people on the plan."
                 description="Cultural fit and bookability are separate. Confirm fees, hours and availability with each participant."
               />
               <div className="section-tools">
@@ -988,78 +972,94 @@ export default function Workspace({
                 action={action}
                 disabled={!!busy || !persisted}
               />
-              <div className="candidate-grid">
-                {doc.candidates.map((c, i) => (
-                  <article className="candidate-card" key={c.id}>
-                    <div
-                      className="candidate-art"
-                      style={{ background: c.color }}
-                    >
-                      <span className="candidate-type">
-                        {c.kind === "artist" ? (
-                          <Music2 size={14} />
-                        ) : (
-                          <Utensils size={14} />
-                        )}{" "}
-                        {c.kind === "artist" ? "PERFORMER" : "MARKET"}
-                      </span>
-                      <div className={"abstract abstract-" + (i % 4)}>
-                        <i />
-                        <i />
-                        <i />
-                      </div>
-                      <span className="art-index">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <div className="candidate-content">
-                      <div className="candidate-title">
-                        <h3>{c.name}</h3>
-                        {selected.some((a) => a.candidateId === c.id) && (
-                          <span className="tiny-pill">In plan</span>
-                        )}
-                      </div>
-                      <p>{c.category}</p>
-                      <div className="candidate-facts">
-                        <span>{money(c.fee)}</span>
-                        <span>
-                          <Zap size={12} />
-                          {c.power} kW
-                        </span>
-                        <span className={c.available ? "" : "red"}>
-                          {c.available ? "Available*" : "Unavailable"}
-                        </span>
-                      </div>
-                      <div className="candidate-disclosure">
-                        {c.verified
-                          ? "Organizer confirmed terms"
-                          : "Terms unverified"}{" "}
-                        ·{" "}
-                        {c.entityId
-                          ? "Qloo entity linked"
-                          : "No Qloo entity linked"}
-                      </div>
-                      <div className="candidate-actions">
-                        <button onClick={() => setEditor({ ...c })}>
-                          Edit terms <ArrowRight size={13} />
-                        </button>
-                        <button
-                          disabled={!configured || !persisted}
-                          onClick={() => {
-                            setResolver({ candidateId: c.id, kind: c.kind });
-                            setSearchText(c.name);
-                            setResults([]);
-                          }}
-                        >
-                          Link Qloo <Search size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+              <div className="panel roster-register desk-table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>No.</th>
+                      <th>Participant</th>
+                      <th>Role / cultural source</th>
+                      <th>Fee / power</th>
+                      <th>Booking</th>
+                      <th>Manage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {doc.candidates.map((c, i) => (
+                      <tr key={c.id}>
+                        <td>{String(i + 1).padStart(2, "0")}</td>
+                        <td>
+                          <strong>{c.name}</strong>
+                          <small>
+                            {selected.some((a) => a.candidateId === c.id)
+                              ? "ACTIVE PLAN"
+                              : "RESERVE"}
+                          </small>
+                        </td>
+                        <td>
+                          {c.category}
+                          <small>
+                            {c.entityId
+                              ? "Direct Qloo reference"
+                              : c.culturalProfile
+                                ? "Explicit vendor proxy"
+                                : "No live cultural evidence"}
+                          </small>
+                        </td>
+                        <td>
+                          {c.feeKnown === false ? "Fee unknown" : money(c.fee)}
+                          <small>{c.power} kW</small>
+                        </td>
+                        <td>
+                          <span
+                            className={
+                              "desk-term " +
+                              (c.verified ? "confirmed" : "unconfirmed")
+                            }
+                          >
+                            {c.verified ? "Confirmed" : "Unconfirmed"}
+                          </span>
+                          <small>
+                            {c.availabilityKnown === false
+                              ? "Availability unknown"
+                              : c.available
+                                ? "Available, organizer supplied"
+                                : "Unavailable"}
+                          </small>
+                        </td>
+                        <td>
+                          <div className="register-actions">
+                            <button onClick={() => setEditor({ ...c })}>
+                              Edit terms <ArrowUpRight size={13} />
+                            </button>
+                            <button
+                              disabled={!configured || !persisted || demo}
+                              onClick={() => {
+                                setResolver({
+                                  candidateId: c.id,
+                                  kind: c.kind,
+                                });
+                                setSearchText(c.name);
+                                setResults([]);
+                              }}
+                            >
+                              Link identity <Search size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
               <OfferingEditor
                 doc={doc}
+                action={action}
+                disabled={!!busy || !persisted}
+              />
+              <VendorProfile
+                doc={doc}
+                demo={demo}
                 action={action}
                 disabled={!!busy || !persisted}
               />
@@ -1074,7 +1074,7 @@ export default function Workspace({
             <>
               <Heading
                 eyebrow="SOUNDS, TASTES & SHARED SPACES"
-                title="Give every moment a place."
+                title="Space, cover and power."
                 description="A conceptual site allocation with capacity, cover and simultaneous power checks."
               />
               <SpatialCanvas
@@ -1396,6 +1396,7 @@ export default function Workspace({
                       if (a) setAudit(a);
                     }}
                   />
+                  {p && <CulturalFingerprint doc={doc} />}
                   <div className="section-label">
                     <span className="eyebrow">
                       02 / COMPARE THE POSSIBILITIES
@@ -1430,6 +1431,12 @@ export default function Workspace({
                     </div>
                   ) : (
                     <>
+                      {p.originRevision !== undefined && (
+                        <div className="info-note">
+                          Restoration proposal from revision {p.originRevision}.
+                          Current terms, restrictions and locks still apply.
+                        </div>
+                      )}
                       <div className="run-summary">
                         <span>
                           <Radio size={14} />{" "}
@@ -1649,17 +1656,28 @@ export default function Workspace({
             </>
           )}
           {view === "reports" && <Reports doc={doc} />}
+          {view === "history" && (
+            <RevisionHistory
+              doc={doc}
+              demo={demo}
+              snapshots={historyDocs}
+              disabled={!!busy || !persisted}
+              action={action}
+              onReview={() => navigate("repair")}
+            />
+          )}
           {view === "evidence" && (
             <>
               <Heading
                 eyebrow="SHOW YOUR WORK"
-                title="Every decision leaves a thread."
+                title="Evidence and sign-offs."
                 description="Keep source receipts, planner logic and human decisions together."
               />
               <div className="section-tools">
                 <span>Evidence belongs to this event and its revisions.</span>
                 <DownloadButton doc={doc} audit={audit} />
               </div>
+              <CulturalFingerprint doc={doc} />
               <div className="evidence-grid">
                 <section className="panel integration-panel">
                   <div className="panel-head">
@@ -1871,6 +1889,8 @@ export default function Workspace({
                   availabilityKnown: editor.availabilityKnown ?? true,
                   width: editor.width ?? 2,
                   depth: editor.depth ?? 2,
+                  tags: editor.tags ?? [],
+                  proxyEntityIds: editor.proxyEntityIds ?? [],
                   power: editor.power,
                   available: editor.available,
                   verified: editor.verified,
@@ -1881,6 +1901,22 @@ export default function Workspace({
               if (data) setEditor(null);
             }}
           >
+            <label className="field">
+              Organizer tags, comma separated
+              <input
+                value={(editor.tags ?? []).join(", ")}
+                maxLength={600}
+                onChange={(e) =>
+                  setEditor({
+                    ...editor,
+                    tags: e.target.value
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter(Boolean),
+                  })
+                }
+              />
+            </label>
             <p className="modal-note">
               Confirm these details directly with the participant. Qloo
               doesn&apos;t verify booking availability or fees.

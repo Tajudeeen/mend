@@ -34,7 +34,7 @@ Manual assignments create a draft. Proposal generation records a source revision
 
 Qloo adapters support identity search, tags, discovery and fixed-pool Insights. Ambiguous identities need explicit selection. The server rechecks selections. A cultural batch requires finite scores for every mapped candidate in its fixed context; no missing result is fabricated. Receipts retain request parameters without secrets, timestamp, raw response, explainability and a SHA-256 hash. Hashes support exported-data integrity, not provider signatures.
 
-The language agent has at most eight model steps, sixteen recorded tool calls, a timeout and bounded output. It can inspect constraints/evidence, generate feasible alternatives and prepare an approval request. It cannot approve, book, spend or send. Cultural statements must match reproducible statements derived from stored receipts. Provider tests are mocked; live grounding remains an integration gate. Local vendor proxies and broader coverage-based fingerprints remain incomplete.
+The language agent has at most eight model steps, sixteen recorded tool calls, a timeout and bounded output. It can inspect constraints/evidence, generate feasible alternatives and prepare an approval request. It cannot approve, book, spend or send. Cultural statements must match reproducible statements derived from stored receipts. Provider tests are mocked; live grounding remains an integration gate. Explicit place-reference vendor proxies and cultural coverage fingerprints are implemented. Their live market quality remains unverified. Assignment restoration creates a new validated proposal from owned server history; it never rolls back old booking facts or evidence.
 
 ## Deployment
 

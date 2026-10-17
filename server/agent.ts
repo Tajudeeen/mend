@@ -1,3 +1,4 @@
+import { fingerprint } from "@/lib/fingerprint";
 import { ToolLoopAgent, tool, isStepCount, Output } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
@@ -54,6 +55,12 @@ export async function investigate(
             kind: c.kind,
             feeKnown: c.feeKnown,
             verified: c.verified,
+            culturalSource: c.entityId
+              ? "direct"
+              : c.culturalProfile
+                ? "explicit-proxy"
+                : "unresolved",
+            proxyRationale: c.culturalProfile?.rationale,
           })),
         }),
     }),
@@ -67,6 +74,7 @@ export async function investigate(
           zones: doc.zones,
           locks: doc.locks,
           constraints: doc.constraints,
+          culturalFingerprint: fingerprint(doc),
         }),
     }),
     resolve_cultural_entity: tool({

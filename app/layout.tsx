@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./mend-desk.css";
 export const metadata: Metadata = {
   title: "MEND | Keep the feeling. Repair the plan.",
   description:

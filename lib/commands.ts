@@ -48,8 +48,14 @@ export function applyCommand(
         } as Candidate;
         after.candidates.push(c);
       } else if (!c) throw new Error("Participant not found.");
-      if (c!.name !== fields.name) {
+      if (
+        action === "addCandidate" ||
+        c!.name !== fields.name ||
+        c!.kind !== fields.kind
+      ) {
         c!.entityId = undefined;
+        c!.culturalProfile = undefined;
+        c!.proxyEntityIds = [];
         after.evidence = [];
       }
       Object.assign(c!, fields);

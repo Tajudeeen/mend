@@ -31,7 +31,7 @@ export default function Events() {
       <section className="page-heading">
         <div>
           <div className="eyebrow">YOUR GATHERINGS</div>
-          <h1>Good things start here.</h1>
+          <h1>Your production book.</h1>
           <p>
             Each event has its own people, constraints, decisions and history.
           </p>
@@ -53,7 +53,7 @@ export default function Events() {
       ) : !events.length ? (
         <section className="panel config-panel">
           <Leaf size={30} />
-          <h3>Your first gathering is waiting.</h3>
+          <h3>No events in the book yet.</h3>
           <p>Create a blank event or explore the fictional sample.</p>
           <Link href="/demo" className="btn quiet">
             Try the sample <ArrowRight size={15} />

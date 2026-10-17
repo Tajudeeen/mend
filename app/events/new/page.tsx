@@ -26,7 +26,7 @@ export default function NewEvent() {
       <section className="page-heading">
         <div>
           <div className="eyebrow">START WITH INTENTION</div>
-          <h1>What are you bringing together?</h1>
+          <h1>Set up the event.</h1>
           <p>
             Create a blank event, then add your participants, spaces and program
             slots.
@@ -51,6 +51,8 @@ export default function NewEvent() {
               }),
               d = (await r.json()) as { event: { id: string }; error: string };
             if (!r.ok) throw new Error(d.error);
+            // Document navigation preserves the hosted dispatch boundary.
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
             window.location.assign("/events/" + d.event.id + "/studio");
           } catch (e) {
             setError((e as Error).message);

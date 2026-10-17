@@ -1,3 +1,4 @@
+import type { CulturalFingerprint } from "./fingerprint.ts";
 import { z } from "zod";
 export const cohortSchema = z.object({
   id: z.string().min(1),
@@ -39,6 +40,12 @@ export type Candidate = {
   excluded?: boolean;
   tags?: string[];
   proxyEntityIds?: string[];
+  culturalProfile?: {
+    version: "proxy-v1";
+    rationale: string;
+    entities: { id: string; name: string }[];
+    resolvedAt: string;
+  };
   offerings?: Offering[];
 };
 export type Zone = {
@@ -80,6 +87,11 @@ export type Evidence = {
   cohortId: string;
   kind: "artist" | "vendor";
   normalization: string;
+  poolKey?: string;
+  candidateProfiles?: Record<
+    string,
+    { source: "direct" | "proxy"; entityIds: string[]; rationale?: string }
+  >;
 };
 export type Scenario = {
   type: "none" | "cancellation" | "rain" | "budget" | "closure" | "offering";
@@ -127,6 +139,7 @@ export type Proposal = {
   truncated?: boolean;
   inputHash?: string;
   reasons?: string[];
+  originRevision?: number;
 };
 export type EventDoc = {
   id: string;
@@ -229,6 +242,7 @@ export type RecoveryReport = {
   unknowns: string[];
   evidenceIds: string[];
   limitations: string[];
+  fingerprint?: CulturalFingerprint;
 };
 export type AgentStep = {
   id: string;

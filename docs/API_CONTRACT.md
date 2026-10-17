@@ -19,6 +19,8 @@ All JSON responses are uncached. The primary target authenticates Supabase sessi
 | assignment, lock | Draft manual assignments or protect commitments |
 | proposeDraft | Validate the manual draft and request approval |
 | search | Search Qloo without auto-selecting a result |
+| vendorProfile | Save/clear one to three reverified place references and an explicit rationale for an independent vendor |
+| restoreRevision | Load an owned historical revision server-side and propose its assignments using current facts and locks |
 | resolve, clearSeeds | Reverify identity selection or clear cohort interests |
 | evidence | Collect a complete fixed-context live receipt |
 | propose | Store alternatives for none/cancellation/rain/budget/closure/offering scenario |
@@ -37,4 +39,4 @@ Errors use `{error}`. Authentication failure returns 401, missing owned event 40
 
 Search supports artists and vendor places; discovery also supports brands. Tags use `/v2/tags?filter.query=...`. Insights uses `/v2/insights` with `filter.type`, explicit seed entities, a fixed `filter.results.entities` pool, and explainability. Authentication uses server-only `x-api-key`. Finite scores and complete candidate coverage are required. Timeouts, bounded retries and local concurrency limits apply.
 
-Reference contracts were reviewed on 2026-10-17 and exercised with mocks. No credentialed live Qloo response is claimed. Independent vendor proxy workflows and Analysis Compare are not complete.
+Reference contracts were reviewed on 2026-10-17 and exercised with mocks. No credentialed live Qloo response is claimed. Place-reference proxy workflows are implemented and mocked-contract tested; live validation and Analysis Compare remain open.

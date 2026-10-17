@@ -1,3 +1,4 @@
+import { culturalRefs, culturalPoolKey, midrank } from "./culture.ts";
 import {
   effective,
   defaultOptimizer,
@@ -22,23 +23,51 @@ export function score(
     .find((e) => e.cohortId === cohortId && e.kind === c.kind);
   return e?.entities[c.entityId];
 }
-/** Fractional midrank in one fixed cohort/domain candidate pool. Raw values never cross contexts. */
+/** Ordinal aggregation never mixes raw values from independent query contexts. */
 export function rankScore(
   doc: EventDoc,
   id: string,
   cohortId: string,
 ): number | undefined {
-  const c = doc.candidates.find((c) => c.id === id),
-    value = score(doc, id, cohortId);
-  if (!c || value === undefined) return;
+  const candidate = doc.candidates.find((c) => c.id === id);
+  if (!candidate) return;
+  if (doc.mode === "demo") {
+    const value = candidate.affinity[cohortId];
+    if (value === undefined) return;
+    const pool = doc.candidates
+      .filter((c) => c.kind === candidate.kind)
+      .map((c) => c.affinity[cohortId])
+      .filter((v): v is number => v !== undefined);
+    return midrank(value, pool);
+  }
+  const receipt = [...doc.evidence]
+    .reverse()
+    .find((e) => e.cohortId === cohortId && e.kind === candidate.kind);
+  if (
+    !receipt ||
+    (receipt.poolKey &&
+      receipt.poolKey !== culturalPoolKey(doc.candidates, candidate.kind))
+  )
+    return;
+  const entityPool = Object.values(receipt.entities);
+  const profileIndex = (c: typeof candidate) => {
+    const refs = culturalRefs(c);
+    if (!refs.length || refs.some((ref) => receipt.entities[ref] === undefined))
+      return undefined;
+    return (
+      refs.reduce(
+        (sum, ref) => sum + midrank(receipt.entities[ref], entityPool),
+        0,
+      ) / refs.length
+    );
+  };
+  const value = profileIndex(candidate);
+  if (value === undefined) return;
   const pool = doc.candidates
-    .filter((v) => v.kind === c.kind)
-    .map((v) => score(doc, v.id, cohortId))
+    .filter((c) => c.kind === candidate.kind)
+    .map(profileIndex)
     .filter((v): v is number => v !== undefined);
-  if (pool.length === 1) return 0.5;
-  const below = pool.filter((v) => v < value).length,
-    ties = pool.filter((v) => v === value).length;
-  return (below + (ties - 1) / 2) / (pool.length - 1);
+  return midrank(value, pool);
 }
 export function validate(
   doc: EventDoc,

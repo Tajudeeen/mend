@@ -4,7 +4,7 @@ export async function GET() {
   return Response.json(
     {
       status: "ok",
-      version: "0.2.0",
+      version: "0.3.0",
       runtime: e.MEND_SITE_COMPAT ? "sites-compatibility" : "next-node",
       qloo: !!e.QLOO_API_KEY,
       model: !!(e.LLM_API_KEY && e.LLM_BASE_URL && e.LLM_MODEL),

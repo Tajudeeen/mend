@@ -57,11 +57,21 @@ export default function Reports({ doc }: { doc: EventDoc }) {
               {r.limitations.join(" ")} {r.evidenceIds.length} evidence
               references.
             </p>
+            {r.fingerprint && (
+              <div className="info-note">
+                Cultural coverage: {r.fingerprint.covered}/{r.fingerprint.total}{" "}
+                participant × audience contexts. {r.fingerprint.proxies.length}{" "}
+                proxy profiles.{" "}
+                {r.fingerprint.tags.filter((t) => t.delta < 0).length} organizer
+                tags reduced.
+              </div>
+            )}
             <details className="trace">
               <summary>Source evidence and assignments</summary>
               <pre>
                 {JSON.stringify(
                   {
+                    fingerprint: r.fingerprint,
                     before: r.before,
                     after: r.after,
                     evidence: doc.evidence.filter((e) =>

@@ -1,3 +1,4 @@
+import { proposeRestoration } from "@/lib/restoration";
 import { runtimeEnv } from "@/lib/runtime";
 import { authenticatedOwner } from "@/server/auth";
 import { applyCommand } from "@/lib/commands";
@@ -115,6 +116,66 @@ export async function POST(request: Request) {
     let after = structuredClone(before),
       detail = "";
     switch (body.action) {
+      case "restoreRevision": {
+        const target = z.number().int().min(0).parse(body.targetRevision);
+        const history = await revisionsFor(user, id);
+        const historical = history.find((r) => r.revision === target);
+        if (!historical)
+          throw new Error(
+            "Historical revision not found in the available history.",
+          );
+        const result = proposeRestoration(before, historical);
+        after = result.event;
+        detail = result.detail;
+        break;
+      }
+      case "vendorProfile": {
+        const candidate = after.candidates.find(
+          (c) => c.id === body.candidateId,
+        );
+        if (!candidate || candidate.kind !== "vendor")
+          throw new Error("Vendor not found.");
+        if (body.clear === true) {
+          candidate.culturalProfile = undefined;
+          candidate.proxyEntityIds = [];
+          detail = "Removed vendor proxy profile and invalidated evidence.";
+        } else {
+          const profile = z
+            .object({
+              rationale: z.string().trim().min(20).max(600),
+              entities: z
+                .array(z.object({ id: uuid, name: z.string().min(1).max(100) }))
+                .min(1)
+                .max(3),
+            })
+            .parse(body.profile);
+          if (
+            new Set(profile.entities.map((e) => e.id)).size !==
+            profile.entities.length
+          )
+            throw new Error("Proxy references must be unique.");
+          for (const entity of profile.entities) {
+            const matches = await search(env as QlooEnv, entity.name, "vendor");
+            if (
+              !matches.some((m) => m.id === entity.id && m.name === entity.name)
+            )
+              throw new Error(
+                "A selected proxy place could not be reverified with Qloo.",
+              );
+          }
+          candidate.entityId = undefined;
+          candidate.culturalProfile = {
+            ...profile,
+            version: "proxy-v1",
+            resolvedAt: new Date().toISOString(),
+          };
+          candidate.proxyEntityIds = profile.entities.map((e) => e.id);
+          detail = `Saved explicit place-reference proxy profile for ${candidate.name}. This is not a direct Qloo identity.`;
+        }
+        after.evidence = [];
+        after.proposal = undefined;
+        break;
+      }
       case "resolve": {
         const result = z
           .object({ id: uuid, name: z.string().min(1).max(100) })
@@ -133,7 +194,10 @@ export async function POST(request: Request) {
           const c = after.candidates.find((c) => c.id === body.candidateId);
           if (!c || c.kind !== kind) throw new Error("Participant not found.");
           c.entityId = result.id;
-          c.name = result.name;
+          c.culturalProfile = undefined;
+          c.proxyEntityIds = [];
+          // A canonical graph identity must not rename an independent event participant.
+          // Organizer booking names remain distinct from their graph references.
         }
         after.evidence = [];
         after.proposal = undefined;

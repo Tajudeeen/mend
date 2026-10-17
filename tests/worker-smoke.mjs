@@ -47,10 +47,11 @@ try {
   assert(workspaceLink, "Landing must expose a workspace document link");
   assert.equal(workspaceLink[1], "/events");
   for (const [route, text] of [
-    [workspaceLink[1], "Good things start here."],
-    ["/events/new", "What are you bringing together?"],
-    ["/settings", "A clear view of what"],
+    [workspaceLink[1], "Your production book."],
+    ["/events/new", "Set up the event."],
+    ["/settings", "Account &amp; connections."],
     ["/demo", "Midnight Culture Market"],
+    ["/study", "Put the workflow on the clock."],
   ]) {
     const page = await mf.dispatchFetch(base + route);
     assert.equal(page.status, 200, route + " must load as a document");
@@ -124,6 +125,34 @@ try {
   const noKey = await post({ action: "search", query: "test", kind: "artist" });
   assert.equal(noKey.status, 400);
   assert(noKey.error.includes("key is not configured"));
+  // Revision restoration uses server-owned history and still needs approval.
+  result = await post({ action: "mode", id, revision: 2, mode: "demo" });
+  assert.equal(result.status, 200);
+  const blockedRestore = await post({
+    action: "restoreRevision",
+    id,
+    revision: 3,
+    targetRevision: 0,
+  });
+  assert.equal(blockedRestore.status, 400);
+  result = await post({
+    action: "restoreRevision",
+    id,
+    revision: 3,
+    targetRevision: 2,
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.event.proposal.originRevision, 2);
+  assert.equal(result.event.proposal.status, "pending");
+  result = await post({
+    action: "approve",
+    id,
+    revision: 4,
+    optionId: result.event.proposal.options[0].id,
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.event.revision, 5);
+  assert(result.event.reports.at(-1).fingerprint);
   console.log(
     "Worker smoke passed: landing/workspace/setup/settings/demo document navigation, auth, create → propose → approve → reload → history, stale write, cross-origin denial, tenant isolation and missing-key failure.",
   );

@@ -1,3 +1,4 @@
+import { culturalRefs, culturalPoolKey } from "./culture.ts";
 import { z } from "zod";
 import { boundedRequest } from "./rate-limit.ts";
 import type { Candidate, Evidence } from "./model";
@@ -155,15 +156,23 @@ export async function collect(
   kind: "artist" | "vendor",
 ): Promise<Evidence> {
   if (!seeds.length) throw new Error("Add resolved audience interests first.");
-  const ids = candidates.filter((c) => c.kind === kind).map((c) => c.entityId);
-  if (ids.some((id) => !id))
-    throw new Error("Resolve every participant in the roster to Qloo first.");
+  const roster = candidates.filter((c) => c.kind === kind);
+  if (!roster.length) throw new Error("Add participants to this domain first.");
+  if (roster.some((c) => !culturalRefs(c).length))
+    throw new Error(
+      "Resolve every participant directly or supply a verified vendor proxy profile first.",
+    );
+  const ids = [...new Set(roster.flatMap(culturalRefs))].sort();
+  if (ids.length > 50)
+    throw new Error(
+      "This fixed evidence pool exceeds 50 entities. Reduce the roster or proxy references before collecting one comparable batch.",
+    );
   const params = {
     "filter.type": kind === "artist" ? "urn:entity:artist" : "urn:entity:place",
     "signal.interests.entities": seeds.join(","),
     "filter.results.entities": ids.join(","),
     "feature.explainability": "true",
-    take: "20",
+    take: String(Math.max(20, ids.length)),
   };
   const body = await qloo(env, "/v2/insights", params);
   const list = Array.isArray(body.results)
@@ -206,8 +215,19 @@ export async function collect(
     },
     cohortId,
     kind,
+    poolKey: culturalPoolKey(candidates, kind),
+    candidateProfiles: Object.fromEntries(
+      roster.map((c) => [
+        c.id,
+        {
+          source: c.entityId ? "direct" : "proxy",
+          entityIds: culturalRefs(c),
+          ...(c.entityId ? {} : { rationale: c.culturalProfile?.rationale }),
+        },
+      ]),
+    ),
     normalization:
-      "Qloo query-normalized affinity, compared only within this audience/domain batch. Aggregated by an explicit MEND heuristic, not a probability or attendance forecast.",
+      "Fixed-context entity midranks, mean ordinal rank within a vendor proxy profile, then candidate-profile midranks. Proxy evidence describes selected references, not a direct Qloo identity for the vendor. No probability or attendance forecast.",
   };
 }
 
