@@ -1,0 +1,113 @@
+import assert from "node:assert/strict";
+import { createRequire } from "node:module";
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
+const req = createRequire(import.meta.url),
+  wranglerReq = createRequire(req.resolve("wrangler/package.json"));
+const { Miniflare } = wranglerReq("miniflare");
+const root = path.resolve("dist/server");
+const entries = await readdir(root, { recursive: true });
+const moduleNames = [
+  "index.js",
+  ...entries.filter((f) => /\.m?js$/.test(f) && f !== "index.js"),
+];
+const modules = await Promise.all(
+  moduleNames.map(async (name) => ({
+    type: "ESModule",
+    path: path.join(root, name),
+    contents: await readFile(path.join(root, name), "utf8"),
+  })),
+);
+const mf = new Miniflare({
+  modules,
+  modulesRoot: root,
+  compatibilityDate: "2026-05-15",
+  compatibilityFlags: ["nodejs_compat"],
+  d1Databases: ["DB"],
+});
+try {
+  const db = await mf.getD1Database("DB");
+  for (const f of (await readdir("drizzle"))
+    .filter((f) => f.endsWith(".sql"))
+    .sort()) {
+    for (const s of (await readFile("drizzle/" + f, "utf8")).split(
+      "--> statement-breakpoint",
+    ))
+      if (s.trim()) await db.prepare(s.trim()).run();
+  }
+  const base = "https://mend.test";
+  const home = await mf.dispatchFetch(base);
+  assert.equal(home.status, 200);
+  const html = await home.text();
+  assert(html.includes("Keep the feeling."));
+  assert(html.includes("Repair the plan."));
+  const unauth = await mf.dispatchFetch(base + "/api/mend");
+  assert.equal(unauth.status, 401);
+  await unauth.text();
+  const headers = {
+    "content-type": "application/json",
+    "oai-authenticated-user-id": "smoke-user",
+    origin: base,
+  };
+  async function post(data) {
+    const r = await mf.dispatchFetch(base + "/api/mend", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(data),
+    });
+    return { status: r.status, ...(await r.json()) };
+  }
+  let result = await post({ action: "create" });
+  assert.equal(result.status, 200);
+  const id = result.event.id;
+  assert.equal(result.event.revision, 0);
+  const malicious = await mf.dispatchFetch(base + "/api/mend", {
+    method: "POST",
+    headers: { ...headers, origin: "https://evil.test" },
+    body: JSON.stringify({ action: "create" }),
+  });
+  assert.equal(malicious.status, 403);
+  await malicious.text();
+  result = await post({
+    action: "propose",
+    id,
+    revision: 0,
+    scenario: { type: "cancellation", candidateId: "a1" },
+  });
+  assert.equal(result.status, 200);
+  assert(result.event.proposal.options.length);
+  assert.equal(result.event.plan[0].candidateId, "a1");
+  const optionId = result.event.proposal.options[0].id;
+  result = await post({ action: "approve", id, revision: 1, optionId });
+  assert.equal(result.status, 200);
+  assert(!result.event.plan.some((a) => a.candidateId === "a1"));
+  const stale = await post({
+    action: "propose",
+    id,
+    revision: 0,
+    scenario: { type: "none" },
+  });
+  assert.equal(stale.status, 409);
+  const history = await mf.dispatchFetch(
+    base + "/api/mend?id=" + id + "&history=1",
+    { headers },
+  );
+  assert.equal(history.status, 200);
+  const restored = await history.json();
+  assert.equal(restored.event.revision, 2);
+  assert.equal(restored.audit.length, 3);
+  assert.equal(restored.revisions.length, 3);
+  const denied = await mf.dispatchFetch(base + "/api/mend?id=" + id, {
+    headers: { ...headers, "oai-authenticated-user-id": "other-user" },
+  });
+  assert.equal(denied.status, 404);
+  await denied.text();
+  const noKey = await post({ action: "search", query: "test", kind: "artist" });
+  assert.equal(noKey.status, 400);
+  assert(noKey.error.includes("key is not configured"));
+  console.log(
+    "Worker smoke passed: HTML, auth, create → propose → approve → reload → history, stale write, cross-origin denial, tenant isolation and missing-key failure.",
+  );
+} finally {
+  await mf.dispose();
+}

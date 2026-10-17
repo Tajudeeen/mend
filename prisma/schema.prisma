@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client"
+  output = "../generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+model Event {
+  id String @id @db.Uuid
+  owner String
+  name String
+  revision Int @default(0)
+  document Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  participants Participant[]
+  zones Zone[]
+  slots LineupSlot[]
+  revisions PlanRevision[]
+  evidence EvidenceRecord[]
+  reports RecoveryReport[]
+  runs RecoveryRun[]
+  audits AuditEvent[]
+  @@index([owner, updatedAt])
+}
+model Participant {
+  id String
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  name String
+  kind String
+  category String
+  fee Int?
+  availability Boolean?
+  confirmed Boolean @default(false)
+  properties Json
+  offerings VendorOffering[]
+  @@id([eventId,id])
+}
+model VendorOffering {
+  id String
+  participantId String
+  eventId String @db.Uuid
+  participant Participant @relation(fields:[eventId,participantId],references:[eventId,id],onDelete:Cascade)
+  name String
+  available Boolean
+  allergens String[]
+  restrictions String[]
+  @@id([eventId,participantId,id])
+}
+model Zone {
+  id String
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  name String
+  kind String
+  properties Json
+  @@id([eventId,id])
+}
+model LineupSlot {
+  id String
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  name String
+  kind String
+  start Float
+  end Float
+  @@id([eventId,id])
+}
+model PlanRevision {
+  id String @id @db.Uuid
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  revision Int
+  status String
+  document Json
+  at DateTime @default(now())
+  assignments Assignment[]
+  @@unique([eventId,revision])
+}
+model Assignment {
+  id String @id @default(uuid()) @db.Uuid
+  revisionId String @db.Uuid
+  revision PlanRevision @relation(fields:[revisionId],references:[id],onDelete:Cascade)
+  slotId String
+  participantId String
+  zoneId String
+  locked Boolean
+  @@unique([revisionId,slotId])
+  @@unique([revisionId,participantId])
+}
+model EvidenceRecord {
+  id String @id @db.Uuid
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  provider String
+  hash String
+  context Json
+  payload Json
+  at DateTime @default(now())
+}
+model RecoveryRun {
+  id String @id @db.Uuid
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  state String
+  payload Json
+  at DateTime @default(now())
+}
+model RecoveryReport {
+  id String @id @db.Uuid
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  proposalId String
+  payload Json
+  at DateTime @default(now())
+}
+model AuditEvent {
+  id String @id @db.Uuid
+  eventId String @db.Uuid
+  event Event @relation(fields:[eventId],references:[id],onDelete:Cascade)
+  owner String
+  revision Int
+  action String
+  detail String
+  at DateTime @default(now())
+  @@index([eventId,revision])
+}
+model OperationKey {
+  key String
+  owner String
+  result Json
+  at DateTime @default(now())
+  @@id([owner,key])
+}
