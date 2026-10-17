@@ -1855,17 +1855,11 @@ export default function Workspace({
               </section>
             </>
           )}
-          <footer>
-            <span className="footer-brand" role="img" aria-label="MEND">
-              <MendMark />
-            </span>
-            <span>Culture is the connection. Keep it together.</span>
-            <span>
-              {doc.mode === "demo"
-                ? "DEMO / FICTIONAL DATA"
-                : "LIVE / QUERY-RELATIVE EVIDENCE"}
-            </span>
-          </footer>
+          <p className="workspace-endnote">
+            {doc.mode === "demo"
+              ? "DEMO / FICTIONAL PARTICIPANTS & SYNTHETIC CULTURAL SIGNALS"
+              : "LIVE MODE / QUERY-RELATIVE EVIDENCE & ORGANIZER-SUPPLIED BOOKING FACTS"}
+          </p>
         </main>
       </div>
       {busy && (

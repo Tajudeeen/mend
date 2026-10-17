@@ -2025,3 +2025,328 @@ textarea {
     font-size: 36px;
   }
 }
+/* Session intro and shared site footer. */
+.mend-document {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+.mend-page-content {
+  flex: 1;
+  min-width: 0;
+}
+.mend-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #222b25;
+  color: #f1eedf;
+  padding: 30px clamp(24px, 5vw, 76px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  animation: splash-failsafe 0s 3s forwards;
+}
+.mend-splash[hidden],
+html[data-mend-intro="skip"] .mend-splash {
+  display: none;
+}
+.splash-edition,
+.splash-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #aebba1;
+}
+.splash-edition {
+  padding-bottom: 22px;
+  border-bottom: 1px solid #526047;
+}
+.splash-identity {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 25px;
+  padding: 32px 0;
+}
+.splash-mark {
+  display: block;
+  width: 116px;
+  height: 116px;
+  color: var(--lime);
+}
+.splash-mark svg {
+  width: 100%;
+  height: 100%;
+}
+.splash-mark path {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: splash-mark-in 0.75s ease-out forwards;
+}
+.splash-rule {
+  height: 1px;
+  width: 48px;
+  background: #8a9b72;
+  animation: splash-rule-in 0.75s ease-out forwards;
+}
+.splash-identity p {
+  font-family: var(--display);
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 700;
+  line-height: 1.07;
+  letter-spacing: -0.5px;
+}
+.splash-identity p > span {
+  color: #abbc98;
+}
+.splash-bottom {
+  padding-top: 20px;
+  border-top: 1px solid #526047;
+}
+.splash-bottom > button {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0;
+  color: #ecf0da;
+  min-height: 44px;
+  padding: 10px 0 10px 12px;
+}
+.mend-splash.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+}
+.workspace-endnote {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.7px;
+  color: #7d866f;
+  padding: 26px 0 9px;
+  border-top: 1px solid var(--line);
+  margin-top: 35px;
+  line-height: 1.8;
+}
+.mend-footer {
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 44px clamp(24px, 5vw, 76px) 22px;
+  background: #222b25;
+  color: #f0eedf;
+  border-top: 1px solid #56614d;
+  font-size: 12px;
+}
+.mend-footer-main,
+.mend-footer-bottom {
+  max-width: 1288px;
+  margin: 0 auto;
+}
+.mend-footer-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 60px;
+  padding-bottom: 38px;
+}
+.mend-footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 25px;
+}
+.footer-mark {
+  display: inline-flex;
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;
+  color: var(--lime);
+}
+.footer-mark svg {
+  width: 100%;
+  height: 100%;
+}
+.mend-footer-brand p {
+  font-family: var(--display);
+  font-size: 33px;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.4px;
+}
+.mend-footer-brand p > span {
+  color: #b4c3a1;
+}
+.mend-footer nav {
+  display: flex;
+  gap: clamp(35px, 6vw, 95px);
+}
+.mend-footer nav > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+.mend-footer nav > div > span {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #9eaf8c;
+  margin-bottom: 4px;
+}
+.mend-footer nav a {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #d7dfcd;
+  line-height: 1.5;
+  min-height: 22px;
+}
+.mend-footer nav a:hover {
+  color: var(--lime);
+}
+.mend-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #4d5c43;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.3px;
+  color: #a1b292;
+}
+.mend-footer-bottom small,
+.mend-footer-bottom p,
+.mend-footer-bottom a {
+  font-size: 8px;
+  line-height: 1.8;
+}
+.mend-document:has(.shell) > .mend-footer {
+  margin-left: 210px;
+  padding-left: 36px;
+  padding-right: 36px;
+}
+@keyframes splash-mark-in {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes splash-rule-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes splash-failsafe {
+  to {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+@media (max-width: 1150px) {
+  .mend-document:has(.shell) > .mend-footer {
+    margin-left: 190px;
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+  .mend-footer-main {
+    gap: 36px;
+  }
+  .mend-footer-brand {
+    gap: 18px;
+  }
+  .mend-footer-brand p {
+    font-size: 29px;
+  }
+}
+@media (max-width: 900px) {
+  .mend-footer-main {
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+  .mend-footer nav {
+    gap: 45px;
+  }
+  .mend-footer-bottom {
+    flex-wrap: wrap;
+    gap: 12px 25px;
+  }
+  .mend-footer-bottom > p {
+    order: 3;
+    width: 100%;
+  }
+}
+@media (max-width: 760px) {
+  .mend-document:has(.shell) > .mend-footer {
+    margin-left: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .mend-footer {
+    padding: 34px 24px 22px;
+  }
+  .mend-footer-brand p {
+    font-size: 32px;
+  }
+  .mend-footer-main {
+    gap: 32px;
+    padding-bottom: 30px;
+  }
+  .mend-footer nav {
+    width: 100%;
+    gap: 30px;
+    justify-content: space-between;
+  }
+  .mend-footer nav > div {
+    flex: 1;
+  }
+  .mend-footer nav a {
+    font-size: 10px;
+    gap: 10px;
+    min-height: 28px;
+  }
+  .splash-edition,
+  .splash-bottom {
+    font-size: 7px;
+    letter-spacing: 0.6px;
+    gap: 17px;
+  }
+  .splash-edition > span:last-child {
+    max-width: 110px;
+    text-align: right;
+  }
+  .splash-mark {
+    width: 98px;
+    height: 98px;
+  }
+  .splash-bottom > span {
+    max-width: 135px;
+    line-height: 1.8;
+  }
+  .splash-bottom > button {
+    font-size: 11px;
+    gap: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mend-splash {
+    display: none;
+  }
+  .splash-mark path,
+  .splash-rule {
+    animation: none;
+  }
+}

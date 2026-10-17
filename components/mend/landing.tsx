@@ -216,18 +216,6 @@ export default function Landing() {
           </Link>
         </section>
       </main>
-      <footer className="front-footer">
-        <span role="img" aria-label="MEND" className="front-mark">
-          <MendMark />
-        </span>
-        <p>Keep the feeling. Repair the plan.</p>
-        <Link href="/study">
-          Time a repair <ArrowUpRight size={17} />
-        </Link>
-        <Link href="/events">
-          Back to work <ArrowUpRight size={17} />
-        </Link>
-      </footer>
     </div>
   );
 }

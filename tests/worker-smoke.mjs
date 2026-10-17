@@ -41,6 +41,13 @@ try {
   const html = await home.text();
   assert(html.includes("Keep the feeling."));
   assert(html.includes("Repair the plan."));
+  assert.equal(
+    [...html.matchAll(/<footer[\s>]/g)].length,
+    1,
+    "One shared footer per page",
+  );
+  assert(html.includes('aria-label="MEND footer"'));
+  assert(html.includes('aria-label="Welcome to MEND"'));
   // Follow the rendered workspace destination as a real document request.
   // SSR of the landing page alone cannot verify that its destination exists.
   const workspaceLink = html.match(/<a[^>]*href="([^"]+)"[^>]*>Open workspace/);
@@ -56,10 +63,14 @@ try {
     const page = await mf.dispatchFetch(base + route);
     assert.equal(page.status, 200, route + " must load as a document");
     assert((page.headers.get("content-type") ?? "").includes("text/html"));
-    assert(
-      (await page.text()).includes(text),
-      route + " renders its destination",
+    const pageHtml = await page.text();
+    assert.equal(
+      [...pageHtml.matchAll(/<footer[\s>]/g)].length,
+      1,
+      route + " has one shared footer",
     );
+    assert(pageHtml.includes('aria-label="MEND footer"'));
+    assert(pageHtml.includes(text), route + " renders its destination");
   }
   const unauth = await mf.dispatchFetch(base + "/api/mend");
   assert.equal(unauth.status, 401);

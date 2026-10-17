@@ -11,6 +11,10 @@ This release changes both the interface and the available planning workflow. It 
 - Page boundaries retain full document navigation after the earlier hosted navigation failure.
 - Responsive tables scroll locally. The mobile navigation has a close control and can scroll independently. Browser/mobile visual verification remains open.
 
+## Session intro and shared footer
+
+A brief M-mark splash runs once per tab, supports explicit dismissal and Escape, releases keyboard focus/content on exit, and bypasses motion for reduced-motion users. A CSS/no-script fallback keeps the app accessible if hydration is unavailable. One shared footer supplies workspace, sample, trial, account and source links across the app.
+
 ## Cultural evidence
 
 Independent vendor profiles can reference one to three explicitly selected Qloo places. The organizer supplies a rationale. Every reference is reverified server-side. Saving a profile clears earlier evidence and pending proposals. A direct identity and a proxy profile are mutually exclusive; linking a graph identity no longer renames the organizer's participant.

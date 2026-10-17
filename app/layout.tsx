@@ -1,3 +1,5 @@
+import SplashScreen from "@/components/mend/splash-screen";
+import AppFooter from "@/components/mend/app-footer";
 import type { Metadata } from "next";
 import "./globals.css";
 import "./mend-desk.css";
@@ -13,8 +15,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(sessionStorage.getItem("mend.intro.v1")==="seen"||window.matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.mendIntro="skip"}}catch{}`,
+          }}
+        />
+      </head>
+      <body>
+        <SplashScreen />
+        <noscript>
+          <style>{`.mend-splash{display:none!important}`}</style>
+        </noscript>
+        <div id="mend-document" className="mend-document" tabIndex={-1}>
+          <div className="mend-page-content">{children}</div>
+          <AppFooter />
+        </div>
+      </body>
     </html>
   );
 }

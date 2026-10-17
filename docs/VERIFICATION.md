@@ -3,7 +3,7 @@
 | Check | Result |
 | --- | --- |
 | Native domain, mocked Qloo and D1 tests | 35 passed, 0 failed |
-| Vitest agent contract, React component, navigation and trial tests | 9 passed, 0 failed |
+| Vitest agent contract, React component, navigation and trial tests | 13 passed, 0 failed |
 | TypeScript | Passed |
 | ESLint on application/domain/server code | Passed |
 | Tracked-source secret pattern scan | Passed; not a comprehensive security audit |
@@ -14,11 +14,13 @@
 | Supabase security advisor | No reported lints after schema/RLS application |
 | SQL cross-owner RLS check | Other owner's event visibility: zero; test transaction rolled back |
 
-The 44 automated tests cover cancellation, vendor exit, rain, single-zone closure, budget, offering loss, locks, footprint/category/power/capacity constraints, unknown terms, search truncation, rank invariance, ties, singleton pools and an independent tiny exhaustive optimizer comparison. They also exercise manual draft approval, report generation, blank event creation, source-policy rejection, bounded tool calls, request replay, tenant isolation and CAS persistence.
+The 48 automated tests cover cancellation, vendor exit, rain, single-zone closure, budget, offering loss, locks, footprint/category/power/capacity constraints, unknown terms, search truncation, rank invariance, ties, singleton pools and an independent tiny exhaustive optimizer comparison. They also exercise manual draft approval, report generation, blank event creation, source-policy rejection, bounded tool calls, request replay, tenant isolation and CAS persistence.
 
 New checks exercise proxy provenance, pool completeness, monotone ordinal aggregation, stale-pool rejection, missing-value fingerprints, current-fact restoration, explicit approval from the version register and actual event-timestamp trial timing with failed submissions.
 
 Mocked-provider tests use the real agent SDK with a simulated compatible endpoint. React tests use JSDOM and exercise sample cancellation → approval → report without network writes, plus closure and spatial controls. These are not browser screenshots or a live model-quality assessment. The model adapter warns that the mocked provider lacks schema-native response format; application-level Zod validation still gates outputs.
+
+Splash checks cover automatic dismissal, once-per-session behavior, explicit button/keyboard dismissal, content focus release, reduced-motion bypass and safe late hydration. Worker SSR checks require exactly one shared footer across the page routes.
 
 A navigation regression checks that the workspace click leaves default browser navigation available. Page-entry links deliberately use document navigation across the hosting dispatch boundary.
 
