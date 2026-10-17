@@ -1,8 +1,10 @@
 import SplashScreen from "@/components/mend/splash-screen";
 import AppFooter from "@/components/mend/app-footer";
+import EventAtmosphere from "@/components/mend/event-atmosphere";
 import type { Metadata } from "next";
 import "./globals.css";
 import "./mend-desk.css";
+import "./event-atmosphere.css";
 export const metadata: Metadata = {
   title: "MEND | Keep the feeling. Repair the plan.",
   description:
@@ -19,7 +21,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(sessionStorage.getItem("mend.intro.v1")==="seen"||window.matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.mendIntro="skip"}}catch{}`,
+            __html: `try{if(sessionStorage.getItem("mend.intro.v1")==="seen"||window.matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.dataset.mendIntro="skip"}}catch{}try{if(sessionStorage.getItem("mend.motion.v1")==="paused"){document.documentElement.dataset.mendMotion="paused"}}catch{}`,
           }}
         />
       </head>
@@ -29,6 +31,7 @@ export default function RootLayout({
           <style>{`.mend-splash{display:none!important}`}</style>
         </noscript>
         <div id="mend-document" className="mend-document" tabIndex={-1}>
+          <EventAtmosphere />
           <div className="mend-page-content">{children}</div>
           <AppFooter />
         </div>
