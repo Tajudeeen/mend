@@ -1,13 +1,11 @@
 "use client";
-import { useRouter } from "next/navigation";
 
-import Link from "next/link";
+import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
 import { useState } from "react";
 import { sampleEvent } from "@/lib/seed";
 import type { Brief } from "@/lib/model";
 export default function NewEvent() {
-  const router = useRouter();
   const [b, setB] = useState<Brief>(() => ({
       ...sampleEvent().brief,
       name: "",
@@ -53,7 +51,7 @@ export default function NewEvent() {
               }),
               d = (await r.json()) as { event: { id: string }; error: string };
             if (!r.ok) throw new Error(d.error);
-            router.push("/events/" + d.event.id + "/studio");
+            window.location.assign("/events/" + d.event.id + "/studio");
           } catch (e) {
             setError((e as Error).message);
           } finally {

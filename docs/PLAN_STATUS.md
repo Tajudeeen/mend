@@ -13,7 +13,7 @@ Source of requirements: `docs/product-spec.md`, recovered from the supplied shar
 | 6 Interface | Implemented, browser gate open | Landing, sample, event setup, studio, roster, floorplan, scenarios, decisions, reports and settings |
 | 7 Recovery | Implemented for bounded cases | Participant/vendor exit, individual zone loss, rain, budget, declared offering alternatives, approval and reports |
 | 8 Benchmark | Partial | 20 synthetic scenarios, 40 rules/rank runs; live-Qloo and LLM-only comparisons not run |
-| 9 Production QA | Partial | 34 domain/adapter/component tests, Worker smoke, RLS advisor, ownership checks; browser, deployed auth and PostgreSQL application tests remain |
+| 9 Production QA | Partial | 35 domain/adapter/component/navigation tests, Worker smoke, RLS advisor, ownership checks; browser, deployed auth and PostgreSQL application tests remain |
 | 10 Deployment | Partial | Sites compatibility URL works; Vercel environment setup blocked by team-scope authorization |
 | 11 Submission | Incomplete | Public repository visibility, live evidence, screenshots, impact study and final judge verification remain |
 

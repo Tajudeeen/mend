@@ -1,11 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
 
-import Link from "next/link";
+import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
 import { useEffect, useState } from "react";
 export default function Settings() {
-  const router = useRouter();
   const [health, setHealth] = useState<Record<string, unknown>>({}),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
@@ -66,7 +64,7 @@ export default function Settings() {
                     }),
                     d = (await r.json()) as { error?: string };
                   if (!r.ok) throw new Error(d.error);
-                  router.push("/events");
+                  window.location.assign("/events");
                 } catch (e) {
                   setMessage((e as Error).message);
                 } finally {

@@ -41,6 +41,25 @@ try {
   const html = await home.text();
   assert(html.includes("Keep the feeling."));
   assert(html.includes("Repair the plan."));
+  // Follow the rendered workspace destination as a real document request.
+  // SSR of the landing page alone cannot verify that its destination exists.
+  const workspaceLink = html.match(/<a[^>]*href="([^"]+)"[^>]*>Open workspace/);
+  assert(workspaceLink, "Landing must expose a workspace document link");
+  assert.equal(workspaceLink[1], "/events");
+  for (const [route, text] of [
+    [workspaceLink[1], "Good things start here."],
+    ["/events/new", "What are you bringing together?"],
+    ["/settings", "A clear view of what"],
+    ["/demo", "Midnight Culture Market"],
+  ]) {
+    const page = await mf.dispatchFetch(base + route);
+    assert.equal(page.status, 200, route + " must load as a document");
+    assert((page.headers.get("content-type") ?? "").includes("text/html"));
+    assert(
+      (await page.text()).includes(text),
+      route + " renders its destination",
+    );
+  }
   const unauth = await mf.dispatchFetch(base + "/api/mend");
   assert.equal(unauth.status, 401);
   await unauth.text();
@@ -106,7 +125,7 @@ try {
   assert.equal(noKey.status, 400);
   assert(noKey.error.includes("key is not configured"));
   console.log(
-    "Worker smoke passed: HTML, auth, create → propose → approve → reload → history, stale write, cross-origin denial, tenant isolation and missing-key failure.",
+    "Worker smoke passed: landing/workspace/setup/settings/demo document navigation, auth, create → propose → approve → reload → history, stale write, cross-origin denial, tenant isolation and missing-key failure.",
   );
 } finally {
   await mf.dispose();

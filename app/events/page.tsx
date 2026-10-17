@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
 import { useEffect, useState } from "react";
 import { ArrowRight, Plus, CalendarDays, Leaf } from "lucide-react";
