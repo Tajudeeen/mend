@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
+import MendMark from "@/components/mend/mark";
 import { useEffect, useState } from "react";
 export default function Settings() {
   const router = useRouter();
@@ -19,8 +20,8 @@ export default function Settings() {
   return (
     <div className="simple-page">
       <nav>
-        <Link href="/" className="landing-brand">
-          mend.
+        <Link href="/" className="landing-brand" aria-label="MEND home">
+          <MendMark />
         </Link>
         <Link href="/events">My events</Link>
       </nav>

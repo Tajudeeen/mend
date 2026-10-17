@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
+import MendMark from "@/components/mend/mark";
 import { useState } from "react";
 import { sampleEvent } from "@/lib/seed";
 import type { Brief } from "@/lib/model";
@@ -19,8 +20,8 @@ export default function NewEvent() {
   return (
     <div className="simple-page">
       <nav>
-        <Link href="/" className="landing-brand">
-          mend.
+        <Link href="/" className="landing-brand" aria-label="MEND home">
+          <MendMark />
         </Link>
         <Link href="/events">My events</Link>
       </nav>

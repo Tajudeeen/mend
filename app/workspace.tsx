@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import MendMark from "@/components/mend/mark";
 import { useEffect, useState, useCallback } from "react";
 import {
   ArrowUpRight,
@@ -78,18 +79,6 @@ const money = (v: number) =>
     maximumFractionDigits: 0,
   }).format(v);
 const pct = (v: number) => Math.round(v * 100);
-function Mark() {
-  return (
-    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <path
-        d="M6 29V10l14 15 14-15v19M6 20l8-8m12 0 8 8"
-        stroke="currentColor"
-        strokeWidth="3.6"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 function SiteMap({
   doc,
   plan = doc.plan,
@@ -573,10 +562,7 @@ export default function Workspace({
     <div className="shell">
       <aside className={"sidebar " + (mobile ? "open" : "")}>
         <Link href="/" className="brand" aria-label="MEND home">
-          <Mark />
-          <span>
-            mend<span className="brand-dot">.</span>
-          </span>
+          <MendMark />
         </Link>
         <div className="workspace-label">THE ORGANIZER&apos;S WORKSPACE</div>
         <div className="event-switch">
@@ -1852,8 +1838,8 @@ export default function Workspace({
             </>
           )}
           <footer>
-            <span className="footer-brand">
-              <Mark /> mend.
+            <span className="footer-brand" role="img" aria-label="MEND">
+              <MendMark />
             </span>
             <span>Culture is the connection. Keep it together.</span>
             <span>

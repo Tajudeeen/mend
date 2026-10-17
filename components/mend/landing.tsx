@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MendMark from "@/components/mend/mark";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -11,8 +12,8 @@ export default function Landing() {
   return (
     <div className="landing">
       <nav className="landing-nav">
-        <Link className="landing-brand" href="/">
-          mend<span>.</span>
+        <Link className="landing-brand" href="/" aria-label="MEND home">
+          <MendMark />
         </Link>
         <div>
           <Link href="/demo">Try the sample</Link>
@@ -139,7 +140,9 @@ export default function Landing() {
         </section>
       </main>
       <footer>
-        <span className="landing-brand">mend.</span>
+        <span className="landing-brand" role="img" aria-label="MEND">
+          <MendMark />
+        </span>
         <span>Keep the feeling. Repair the plan.</span>
       </footer>
     </div>

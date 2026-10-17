@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import MendMark from "@/components/mend/mark";
 import { useEffect, useState } from "react";
 import { ArrowRight, Plus, CalendarDays, Leaf } from "lucide-react";
 export default function Events() {
@@ -22,8 +23,8 @@ export default function Events() {
   return (
     <div className="simple-page">
       <nav>
-        <Link href="/" className="landing-brand">
-          mend.
+        <Link href="/" className="landing-brand" aria-label="MEND home">
+          <MendMark />
         </Link>
         <Link href="/settings">Account & connections</Link>
       </nav>
