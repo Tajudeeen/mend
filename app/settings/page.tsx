@@ -3,13 +3,34 @@
 import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
 import { useEffect, useState } from "react";
+import type { ConnectionResult } from "@/server/connections";
 export default function Settings() {
   const [health, setHealth] = useState<Record<string, unknown>>({}),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [message, setMessage] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [signedIn, setSignedIn] = useState(false),
+    [authAction, setAuthAction] = useState<"signin" | "signup">("signin"),
+    [checking, setChecking] = useState(false),
+    [checks, setChecks] = useState<{
+      checkedAt: string;
+      qloo: ConnectionResult;
+      model: ConnectionResult;
+    } | null>(null);
   useEffect(() => {
+    const confirmationFailed =
+      new URLSearchParams(window.location.search).get("auth") === "failed";
+    fetch("/api/auth")
+      .then((r) => r.json())
+      .then((d) => {
+        setSignedIn((d as { signedIn?: boolean }).signedIn === true);
+        if (confirmationFailed)
+          setMessage(
+            "That confirmation link could not be verified. Try signing in, or request a new confirmation email from your organizer administrator.",
+          );
+      })
+      .catch(() => {});
     fetch("/api/health")
       .then((r) => r.json())
       .then((d) => setHealth(d as typeof health))
@@ -38,7 +59,11 @@ export default function Settings() {
           <h3>Your organizer account</h3>
           {health.auth === "chatgpt-compatibility" ? (
             <>
-              <p>This compatibility deployment uses your ChatGPT identity.</p>
+              <p>
+                {signedIn
+                  ? "You are signed in with ChatGPT."
+                  : "This deployment uses your ChatGPT identity."}
+              </p>
               <a
                 className="btn"
                 target="_top"
@@ -46,6 +71,40 @@ export default function Settings() {
               >
                 Sign in with ChatGPT
               </a>
+            </>
+          ) : signedIn ? (
+            <>
+              <p>
+                You are signed in. Your events are private to your organizer
+                account.
+              </p>
+              <button
+                className="btn quiet"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    const r = await fetch("/api/auth", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ action: "signout" }),
+                    });
+                    const d = (await r.json()) as { error?: string };
+                    if (!r.ok)
+                      throw new Error(d.error || "Could not sign out.");
+                    setSignedIn(false);
+                    setPassword("");
+                    setChecks(null);
+                    setMessage("You have signed out of this browser.");
+                  } catch (error) {
+                    setMessage((error as Error).message);
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Sign out
+              </button>
             </>
           ) : (
             <form
@@ -57,13 +116,25 @@ export default function Settings() {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        action: "signin",
+                        action: authAction,
                         email,
                         password,
                       }),
                     }),
-                    d = (await r.json()) as { error?: string };
-                  if (!r.ok) throw new Error(d.error);
+                    d = (await r.json()) as {
+                      error?: string;
+                      confirmationRequired?: boolean;
+                    };
+                  if (!r.ok)
+                    throw new Error(d.error || "Could not authenticate.");
+                  if (d.confirmationRequired) {
+                    setMessage(
+                      "Check your email to confirm your account, then return here to sign in.",
+                    );
+                    setPassword("");
+                    setAuthAction("signin");
+                    return;
+                  }
                   // Re-enter dispatch after the session changes.
                   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
                   window.location.assign("/events");
@@ -89,23 +160,44 @@ export default function Settings() {
                 <input
                   required
                   type="password"
-                  minLength={8}
-                  autoComplete="current-password"
+                  minLength={authAction === "signup" ? 8 : 1}
+                  autoComplete={
+                    authAction === "signup"
+                      ? "new-password"
+                      : "current-password"
+                  }
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </label>
               <button className="btn" disabled={busy}>
-                Sign in
+                {busy
+                  ? "Working…"
+                  : authAction === "signup"
+                    ? "Create account"
+                    : "Sign in"}
+              </button>
+              <button
+                type="button"
+                className="btn quiet"
+                disabled={busy}
+                onClick={() => {
+                  setAuthAction(authAction === "signin" ? "signup" : "signin");
+                  setMessage("");
+                }}
+              >
+                {authAction === "signin"
+                  ? "New here? Create an account"
+                  : "Already registered? Sign in"}
               </button>
               <p className="fineprint">
-                New organizer accounts are provisioned through the configured
-                Supabase project. The sample workflow is open to everyone.
+                Email confirmation may be required. The sample workflow is open
+                to everyone.
               </p>
             </form>
           )}
           {message && (
-            <p role="alert" className="alert error">
+            <p role="status" className="alert">
               {message}
             </p>
           )}
@@ -137,6 +229,49 @@ export default function Settings() {
             A configured connection isn&apos;t proof of a successful live call.
             Receipts and verified runs appear in the event’s evidence view.
           </p>
+          <button
+            className="btn"
+            disabled={checking || !signedIn}
+            onClick={async () => {
+              setChecking(true);
+              setMessage("");
+              try {
+                const r = await fetch("/api/connections", { method: "POST" });
+                const d = (await r.json()) as NonNullable<typeof checks> & {
+                  error?: string;
+                };
+                if (!r.ok)
+                  throw new Error(d.error || "Connection check failed.");
+                setChecks(d);
+              } catch (error) {
+                setMessage((error as Error).message);
+              } finally {
+                setChecking(false);
+              }
+            }}
+          >
+            {checking ? "Checking connections…" : "Test Qloo and model"}
+          </button>
+          <p className="fineprint">
+            {signedIn
+              ? "Runs one Qloo search and one short model tool-call check using your configured API quota."
+              : "Sign in to run live connection checks."}
+          </p>
+          {checks && (
+            <div role="status" aria-label="Connection check results">
+              <p className="fineprint">
+                Checked {new Date(checks.checkedAt).toLocaleString()}
+              </p>
+              {(["qloo", "model"] as const).map((name) => (
+                <div className="config-row" key={name}>
+                  <span>
+                    {name === "qloo" ? "Qloo" : "Model"}: {checks[name].state}
+                  </span>
+                  <span>{checks[name].detail}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <Link href="/demo" className="btn quiet">
             Explore the sample
           </Link>

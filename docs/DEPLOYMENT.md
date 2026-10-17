@@ -1,5 +1,7 @@
 # Deployment and database handoff
 
+For credential signup links, exact environment names and the live verification sequence, start with [SETUP.md](SETUP.md).
+
 ## Primary target
 
 Use Node 24 and pnpm 11.25.0. `pnpm build:node` generates Prisma and builds Next.js to `.next-node`; `pnpm start:node` serves it. Configure `.env.example` values securely in the hosting environment. Never commit credentials.

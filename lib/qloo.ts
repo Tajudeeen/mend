@@ -52,11 +52,14 @@ export async function qloo(
   )
     throw new Error("Unsupported Qloo origin.");
   const url = new URL(path, origin);
+  if (url.origin !== origin || !path.startsWith("/") || path.startsWith("//"))
+    throw new Error("Unsupported Qloo path.");
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   const response = await boundedRequest(async () => {
     let response: Response | undefined;
     for (let attempt = 0; attempt < 3; attempt++) {
       response = await fetch(url, {
+        redirect: "error",
         headers: { "x-api-key": env.QLOO_API_KEY!, Accept: "application/json" },
         signal: AbortSignal.timeout(12000),
       });
@@ -80,7 +83,9 @@ export async function qloo(
     throw new Error(
       response.status === 429
         ? "Qloo rate limit reached. Try again later."
-        : `Qloo returned HTTP ${response.status}. No sample results were substituted.`,
+        : [401, 403].includes(response.status)
+          ? "Qloo rejected the credentials. Check the API key and its assigned QLOO_API_BASE."
+          : `Qloo returned HTTP ${response.status}. No sample results were substituted.`,
     );
   const raw = await response.text();
   if (raw.length > 100000)

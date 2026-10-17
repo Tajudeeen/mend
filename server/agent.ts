@@ -1,6 +1,6 @@
 import { fingerprint } from "@/lib/fingerprint";
 import { ToolLoopAgent, tool, isStepCount, Output } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { configuredModel } from "@/server/model-provider";
 import { z } from "zod";
 import { scenarioSchema, type EventDoc } from "@/lib/model";
 import {
@@ -18,25 +18,12 @@ export async function investigate(
   instruction: string,
   env: RuntimeEnv,
 ) {
-  if (!env.LLM_API_KEY || !env.LLM_BASE_URL || !env.LLM_MODEL)
-    throw new Error(
-      "Language provider is not configured. Use the structured scenario controls.",
-    );
-  const base = new URL(env.LLM_BASE_URL);
-  if (base.protocol !== "https:" || base.username || base.password)
-    throw new Error(
-      "The configured model endpoint must be HTTPS without embedded credentials.",
-    );
+  const model = configuredModel(env);
   const doc = structuredClone(before),
     run = newRun(instruction);
   run.state = "investigating";
   const remember = (name: string, input: unknown, output: unknown) =>
     recordStep(run, name, input, output);
-  const provider = createOpenAICompatible({
-    name: "mend-configured-provider",
-    baseURL: base.toString().replace(/\/$/, ""),
-    apiKey: env.LLM_API_KEY,
-  });
   const empty = z.object({});
   const tools = {
     get_event_plan: tool({
@@ -230,7 +217,7 @@ export async function investigate(
     }),
   };
   const agent = new ToolLoopAgent({
-    model: provider.chatModel(env.LLM_MODEL),
+    model,
     tools,
     stopWhen: isStepCount(8),
     maxOutputTokens: 1500,
@@ -260,9 +247,11 @@ export async function investigate(
       evidenceIds: c.evidenceIds,
     }));
     if (doc.proposal) doc.proposal.baseRevision = before.revision;
-  } catch (e) {
+  } catch {
     run.state = "failed";
-    run.error = e instanceof Error ? e.message : "Agent failed.";
+    // Provider error bodies can echo keys, URLs or private request data.
+    run.error =
+      "The agent could not complete a validated proposal. Check provider access, connection status and event evidence before trying again.";
     doc.proposal = undefined;
   }
   doc.agentRuns = [...(doc.agentRuns ?? []).slice(-19), run];

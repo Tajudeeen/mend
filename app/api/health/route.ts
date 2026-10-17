@@ -15,7 +15,8 @@ export async function GET() {
           : "not-configured",
       auth: e.MEND_SITE_COMPAT
         ? "chatgpt-compatibility"
-        : process.env.NEXT_PUBLIC_SUPABASE_URL
+        : process.env.NEXT_PUBLIC_SUPABASE_URL &&
+            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
           ? "supabase-configured"
           : "not-configured",
     },

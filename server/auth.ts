@@ -12,8 +12,13 @@ export async function supabaseServer() {
   return createServerClient(url, key, {
     cookies: {
       getAll: () => jar.getAll(),
-      setAll: (values) =>
-        values.forEach((v) => jar.set(v.name, v.value, v.options)),
+      setAll: (values) => {
+        try {
+          values.forEach((v) => jar.set(v.name, v.value, v.options));
+        } catch {
+          // Server Components cannot write cookies. The proxy renews them.
+        }
+      },
     },
   });
 }

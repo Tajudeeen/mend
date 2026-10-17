@@ -80,6 +80,31 @@ try {
     "oai-authenticated-user-id": "smoke-user",
     origin: base,
   };
+  const account = await mf.dispatchFetch(base + "/api/auth", { headers });
+  assert.equal(account.status, 200);
+  assert.deepEqual(await account.json(), { signedIn: true });
+  assert.equal(account.headers.get("cache-control"), "private, no-store");
+  const anonymousProbe = await mf.dispatchFetch(base + "/api/connections", {
+    method: "POST",
+    headers: { origin: base },
+  });
+  assert.equal(anonymousProbe.status, 401);
+  await anonymousProbe.text();
+  const probe = await mf.dispatchFetch(base + "/api/connections", {
+    method: "POST",
+    headers,
+  });
+  assert.equal(probe.status, 200);
+  const probeResult = await probe.json();
+  assert.equal(probeResult.qloo.state, "missing");
+  assert.equal(probeResult.model.state, "missing");
+  const wrongAuth = await mf.dispatchFetch(base + "/api/auth", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ action: "signout" }),
+  });
+  assert.equal(wrongAuth.status, 409, "Sites keeps ChatGPT identity");
+  await wrongAuth.text();
   async function post(data) {
     const r = await mf.dispatchFetch(base + "/api/mend", {
       method: "POST",

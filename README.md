@@ -36,6 +36,10 @@ The existing working URL is a **Sites compatibility deployment**, using Vinext r
 
 A Vercel MEND project was created, but its environment configuration returned a team-scope authorization error. The Next.js build succeeds locally. The Supabase/Prisma application connection, authenticated production flow and Vercel publication remain unverified until that access is resolved. Schema security-advisor checks and a cross-owner RLS test were run through Supabase.
 
+## Connect live services
+
+Start with [the setup guide](docs/SETUP.md) for Qloo access, model API keys, Supabase configuration and the Vercel team-permission fix. Account settings includes authenticated Qloo/model connection checks. A successful probe is separate from scored event evidence and full recovery verification.
+
 ## Run and verify
 
 Use Node 24 and pnpm 11.25.0. Install from the committed lockfile:

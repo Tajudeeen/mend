@@ -33,6 +33,12 @@ The Versions register inspects recent snapshots. Restoring an earlier revision c
 
 Results stay in browser memory until downloaded. There are no prefilled benefits, automatic external submissions or persisted participant identifiers. One self-run synthetic trial is not independent organizer-impact evidence. Follow `ORGANIZER_STUDY.md` before making a measured benefit claim.
 
+## Account and connection setup
+
+The Node target now renews Supabase session cookies through a Next.js proxy, supports current-browser signout, explicit signup confirmation handling, and PKCE/email-token callbacks. Auth responses use private cache headers. The compatibility target retains ChatGPT identity.
+
+Account settings can run authenticated, bounded live Qloo/model probes. Results distinguish configuration from successful search/tool-call responses. Provider credentials are server-only, redirects are refused and raw provider errors are excluded from diagnostics and saved failed runs. `SETUP.md` documents credential access, team authorization and deployment verification. Live keys and primary deployment access remain required.
+
 ## Remaining release gates
 
 Live Qloo coverage and profile validation across two markets, a credentialed language-agent run, real organizer evaluation, browser/accessibility review, Supabase application transactions/session verification, Prisma migration baselining, Vercel scope authorization and judge access remain open. Compound incidents, event deletion, pagination and stronger idempotency matching remain follow-ups.

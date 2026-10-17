@@ -108,3 +108,23 @@ test("model-authored ungrounded cultural claims fail closed", async () => {
   expect(out.run.state).toBe("failed");
   expect(out.event.proposal).toBeUndefined();
 });
+
+test("failed provider responses do not persist raw upstream secrets in a run", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      Response.json(
+        { error: { message: "contract-test-key echoed by upstream" } },
+        { status: 401 },
+      ),
+    ),
+  );
+  const result = await investigate(
+    sampleEvent(),
+    "Investigate this event",
+    env,
+  );
+  expect(result.run.state).toBe("failed");
+  expect(result.event.proposal).toBeUndefined();
+  expect(JSON.stringify(result.run)).not.toContain("contract-test-key");
+});
