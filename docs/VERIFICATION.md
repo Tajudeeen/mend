@@ -30,6 +30,12 @@ The Worker smoke loads the built artifact in Miniflare and exercises actual SSR/
 
 Synthetic evaluation data and its limitations are committed under `docs/evaluation/`. Several larger searches truncate and are labeled accordingly. No live-Qloo or LLM-only benchmark, calibrated preference/attendance result, organizer study or booking has been run.
 
+## Provider transport follow-up, October 23, 2026
+
+Qloo responses are now read as a bounded UTF-8 stream. The 100,000-byte limit is enforced while downloading, including multibyte characters, and overflow cancels the remaining stream. The four-request concurrency limit now covers the response body as well as receipt of headers, so slow downloads cannot bypass it.
+
+All 39 native tests and 30 Vitest tests passed, with TypeScript and ESLint passing. Four new transport regressions cover an oversized unfinished stream, byte-based limits, UTF-8 split across chunks and concurrency while bodies remain pending. Existing mocked Qloo provenance and complete-pool checks still pass. These results do not establish live Qloo or model access.
+
 ## Unverified release gates
 
 - No live Qloo key or model credentials were available.

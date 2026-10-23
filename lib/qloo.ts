@@ -27,6 +27,33 @@ const tagSchema = z
   .object({ tag_id: z.string(), name: z.string() })
   .passthrough();
 export type QlooEnv = { QLOO_API_KEY?: string; QLOO_API_BASE?: string };
+async function readQlooBody(response: Response) {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("Qloo returned an empty response.");
+  const decoder = new TextDecoder("utf-8", { fatal: true });
+  let size = 0;
+  let text = "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) return text + decoder.decode();
+      size += value.byteLength;
+      if (size > 100000)
+        throw new Error(
+          "Qloo response exceeded the evidence size limit. No batch was saved.",
+        );
+      text += decoder.decode(value, { stream: true });
+    }
+  } finally {
+    // Stop downloading on overflow or malformed UTF-8 and free the stream lock.
+    try {
+      await reader.cancel();
+    } catch {
+      /* Preserve the original failure. */
+    }
+    reader.releaseLock();
+  }
+}
 export async function digest(value: unknown) {
   const bytes = new TextEncoder().encode(JSON.stringify(value));
   return [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))]
@@ -55,7 +82,7 @@ export async function qloo(
   if (url.origin !== origin || !path.startsWith("/") || path.startsWith("//"))
     throw new Error("Unsupported Qloo path.");
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const response = await boundedRequest(async () => {
+  const raw = await boundedRequest(async () => {
     let response: Response | undefined;
     for (let attempt = 0; attempt < 3; attempt++) {
       response = await fetch(url, {
@@ -77,21 +104,19 @@ export async function qloo(
         ),
       );
     }
-    return response!;
+    if (!response!.ok) {
+      await response!.body?.cancel();
+      throw new Error(
+        response!.status === 429
+          ? "Qloo rate limit reached. Try again later."
+          : [401, 403].includes(response!.status)
+            ? "Qloo rejected the credentials. Check the API key and its assigned QLOO_API_BASE."
+            : `Qloo returned HTTP ${response!.status}. No sample results were substituted.`,
+      );
+    }
+    // Keep the concurrency slot until the bounded body is fully consumed.
+    return readQlooBody(response!);
   });
-  if (!response.ok)
-    throw new Error(
-      response.status === 429
-        ? "Qloo rate limit reached. Try again later."
-        : [401, 403].includes(response.status)
-          ? "Qloo rejected the credentials. Check the API key and its assigned QLOO_API_BASE."
-          : `Qloo returned HTTP ${response.status}. No sample results were substituted.`,
-    );
-  const raw = await response.text();
-  if (raw.length > 100000)
-    throw new Error(
-      "Qloo response exceeded the evidence size limit. No batch was saved.",
-    );
   const body = z
     .object({
       success: z.boolean().optional(),
