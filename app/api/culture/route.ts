@@ -1,3 +1,4 @@
+import { smallJson, privateHeaders, RequestBodyError } from "@/server/http";
 import { z } from "zod";
 import { authenticatedOwner } from "@/server/auth";
 import { runtimeEnv } from "@/lib/runtime";
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
       );
     const user = await authenticatedOwner(request);
     rateLimit(user + ":culture", 12);
-    const b = (await request.json()) as Record<string, unknown>,
+    const b = z.record(z.unknown()).parse(await smallJson(request)),
       env = runtimeEnv();
     if (b.action === "tags")
       return Response.json({
@@ -40,7 +41,10 @@ export async function POST(request: Request) {
   } catch (e) {
     return Response.json(
       { error: e instanceof Error ? e.message : "Request failed." },
-      { status: 400 },
+      {
+        status: e instanceof RequestBodyError ? e.status : 400,
+        headers: privateHeaders,
+      },
     );
   }
 }

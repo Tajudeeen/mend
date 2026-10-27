@@ -1,3 +1,4 @@
+import { smallJson, privateHeaders, RequestBodyError } from "@/server/http";
 import { z } from "zod";
 import { authenticatedOwner } from "@/server/auth";
 import { runtimeEnv } from "@/lib/runtime";
@@ -15,15 +16,13 @@ export async function POST(request: Request) {
       );
     const user = await authenticatedOwner(request);
     rateLimit(user + ":agent", 4);
-    const text = await request.text();
-    if (text.length > 5000) throw new Error("Instruction too long.");
     const b = z
       .object({
         id: z.string().uuid(),
         revision: z.number().int(),
         instruction: z.string().min(5).max(1500),
       })
-      .parse(JSON.parse(text));
+      .parse(await smallJson(request, 5000));
     const before = await loadEvent(user, b.id);
     if (before.revision !== b.revision)
       throw new Error("The event changed. Reload before investigating.");
@@ -42,7 +41,10 @@ export async function POST(request: Request) {
   } catch (e) {
     return Response.json(
       { error: e instanceof Error ? e.message : "Investigation failed." },
-      { status: 400 },
+      {
+        status: e instanceof RequestBodyError ? e.status : 400,
+        headers: privateHeaders,
+      },
     );
   }
 }

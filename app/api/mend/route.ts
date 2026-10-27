@@ -1,3 +1,9 @@
+import {
+  smallJson,
+  sameOrigin,
+  privateHeaders,
+  RequestBodyError,
+} from "@/server/http";
 import { proposeRestoration } from "@/lib/restoration";
 import { runtimeEnv } from "@/lib/runtime";
 import { authenticatedOwner } from "@/server/auth";
@@ -18,21 +24,23 @@ import {
 } from "@/lib/repository";
 export const dynamic = "force-dynamic";
 const json = (value: unknown, status = 200) =>
-  Response.json(value, { status, headers: { "Cache-Control": "no-store" } });
+  Response.json(value, { status, headers: privateHeaders });
 const uuid = z.string().uuid();
 const owner = authenticatedOwner;
 function fail(error: unknown) {
   const message = error instanceof Error ? error.message : "Request failed";
   const status =
-    error instanceof z.ZodError
-      ? 400
-      : message.includes("Sign in")
-        ? 401
-        : message.includes("not found")
-          ? 404
-          : message.includes("another session") || message.includes("stale")
-            ? 409
-            : 400;
+    error instanceof RequestBodyError
+      ? error.status
+      : error instanceof z.ZodError
+        ? 400
+        : message.includes("Sign in")
+          ? 401
+          : message.includes("not found")
+            ? 404
+            : message.includes("another session") || message.includes("stale")
+              ? 409
+              : 400;
   return json(
     {
       error:
@@ -70,15 +78,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const env = runtimeEnv();
   try {
-    const origin = request.headers.get("origin");
-    if (origin && origin !== new URL(request.url).origin)
+    if (!sameOrigin(request))
       return json({ error: "Cross-origin request refused." }, 403);
-    if (!request.headers.get("content-type")?.includes("application/json"))
-      return json({ error: "JSON required." }, 415);
-    const text = await request.text();
-    if (text.length > 40000) return json({ error: "Request too large." }, 413);
-    const body = JSON.parse(text),
-      user = await owner(request);
+    const user = await owner(request);
+    const body = z.record(z.unknown()).parse(await smallJson(request, 40000));
+    const action = z.string().min(1).max(40).parse(body.action);
     const requestKey = body.requestKey
       ? uuid.parse(body.requestKey)
       : undefined;
@@ -235,20 +239,13 @@ export async function POST(request: Request) {
         break;
       }
       default: {
-        const result = applyCommand(before, body.action, body);
+        const result = applyCommand(before, action, body);
         after = result.event;
         detail = result.detail;
         break;
       }
     }
-    after = await saveEvent(
-      user,
-      before,
-      after,
-      body.action,
-      detail,
-      requestKey,
-    );
+    after = await saveEvent(user, before, after, action, detail, requestKey);
     return json({ event: after, audit: await auditFor(user, id) });
   } catch (e) {
     return fail(e);

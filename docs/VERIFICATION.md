@@ -59,3 +59,16 @@ All 39 native tests and 30 Vitest tests passed, with TypeScript and ESLint passi
 - Browser preview was attempted through the supported Sites preview. Its CLI reported a running preview, but the cloud browser returned `ERR_CONNECTION_REFUSED`. Browser/mobile/accessibility QA remains unverified. No alternate browser route or network configuration was used.
 
 These checks do not complete the live-Qloo, live-model, public-access, deployed-auth or real-organizer gates.
+
+
+## Code correctness follow-up, October 27, 2026
+
+- Approved cancellations, closures, rain closures and budget changes now become current event facts. Subsequent repairs and restoration cannot silently revive a cancelled act or reopen a blocked zone. The incident remains in its approved proposal/report, while the event scenario returns to `none` so a deliberate later edit is respected.
+- Offering substitutions merge global and incident allergen exclusions, compare normalized names, retain the affected vendor and recheck declared inventory on approval. This validates organizer declarations, not food safety.
+- Unknown incident participants, zones and vendor offerings are rejected in the shared planner, including the agent path.
+- Nonzero physical spacing is rejected rather than silently accepted. The conceptual canvas has no calibrated distance scale, so physical clearance remains unsupported.
+- Event, culture and agent APIs consume bounded streams, count UTF-8 bytes and cancel over-limit uploads. Event writes require a matching Origin header. Upload regressions assert cancellation before event/provider access.
+- The agent reserves its 16-call budget before each execution. A 20-call parallel model response triggers at most 16 mocked provider searches. Trace limits remain a second check.
+- 50 native tests and 38 Vitest tests pass across the full suites and the focused agent-budget follow-up. TypeScript and lint pass. The Next.js production build and Worker/database smoke are checked for this revision before publication.
+
+Live credentials, production authentication, browser/device QA and public judge access remain separate gates. This pass makes no claim that every possible defect has been eliminated.

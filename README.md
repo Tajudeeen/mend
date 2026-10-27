@@ -20,7 +20,7 @@ Source: https://github.com/Tajudeeen/mend
 - Conceptual floorplan with pointer/keyboard positioning, pan, zoom, locked zones and undo before save.
 - Performer/vendor withdrawal, rain, individual space closure, budget changes and declared offering substitution.
 - Versioned ordinal ranking and cultural continuity metrics with adjustable weights and bounded search.
-- Locked commitments, infeasibility/search-limit disclosure and conditional proposals for unknown terms.
+- Locked commitments, persistent approved incident facts, infeasibility/search-limit disclosure and conditional proposals for unknown terms.
 - Explicit approval, stale-proposal rejection, historical snapshots, approval-gated assignment restoration, before/after reports and exports.
 - Independent vendor proxy profiles and cultural/organizer-tag coverage fingerprints.
 - A local paired manual/MEND trial instrument at `/study`, with raw timing and failed-attempt exports.

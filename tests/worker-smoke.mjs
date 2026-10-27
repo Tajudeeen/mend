@@ -152,6 +152,8 @@ try {
   assert.equal(history.status, 200);
   const restored = await history.json();
   assert.equal(restored.event.revision, 2);
+  assert.equal(restored.event.candidates.find((c) => c.id === "a1").available, false,
+    "Approved cancellation must survive database reload");
   assert.equal(restored.audit.length, 3);
   assert.equal(restored.revisions.length, 3);
   const denied = await mf.dispatchFetch(base + "/api/mend?id=" + id, {

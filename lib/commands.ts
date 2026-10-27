@@ -253,7 +253,12 @@ export function applyCommand(
       after.constraints = z
         .object({
           excludedAllergens: z.array(z.string().max(80)).max(30),
-          minimumSpacing: z.number().min(0).max(20),
+          minimumSpacing: z.literal(0, {
+            errorMap: () => ({
+              message:
+                "Spacing checks need a scaled venue plan. Only zero spacing is supported by this conceptual layout.",
+            }),
+          }),
         })
         .parse(body.constraints);
       detail = "Saved organizer-supplied planning restrictions.";
