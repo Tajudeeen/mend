@@ -6,6 +6,8 @@ MEND helps organizers of music-led markets and cultural pop-ups repair a program
 
 Working deployment: https://mend-events.deeen-code.chatgpt.site
 
+Reviewer walkthrough: https://mend-events.deeen-code.chatgpt.site/review
+
 Sample workflow: https://mend-events.deeen-code.chatgpt.site/demo
 
 Source: https://github.com/Tajudeeen/mend
@@ -78,10 +80,16 @@ The 0.3 interface uses a poster landing, an actual running-order production desk
 
 The sample session is temporary browser state. Saved organizer events and approved reports use server persistence. MEND does not book, send outbound messages, take payments or certify venue/food safety.
 
+## Host requirements and product acceptance
+
+The current repository is public and includes an MIT license. See [the host and product checklist](docs/HOST_REQUIREMENTS.md) and [the submission draft](docs/SUBMISSION.md). The Sites publication is currently owner-private and has no Qloo/model runtime credentials. Public judge access and live integration proof remain gates.
+
+New approved reports snapshot their source receipts and decision inputs, so later evidence refreshes cannot erase the historical sources. Legacy reports disclose missing sources. Download a report and run `pnpm verify:report /absolute/path/to/mend-report.json` to check its stored response hashes. This does not authenticate Qloo as issuer or validate derived scores.
+
 ## Evidence and remaining gates
 
 See `docs/VERIFICATION.md`, `docs/PLAN_STATUS.md`, `docs/ARCHITECTURE.md`, `docs/cultural-continuity.md`, `docs/evaluation/` and the original `docs/product-spec.md`.
 
-Before submission: validate Qloo coverage across two markets, run credentialed cultural/model workflows, complete browser/mobile/accessibility QA, publish the repository, resolve the Vercel scope, verify Supabase authentication and app-level transactions, and collect real organizer feedback. The synthetic benchmark is software verification, not proof of Qloo's impact.
+Before submission: validate Qloo coverage across two markets, run credentialed cultural/model workflows, complete browser/mobile/accessibility QA, verify public judge access, resolve the Vercel scope, verify Supabase authentication and app-level transactions, and collect real organizer feedback. The synthetic benchmark is software verification, not proof of Qloo's impact.
 
 MIT licensed. Retained third-party notices remain applicable.

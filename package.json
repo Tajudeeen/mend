@@ -22,7 +22,8 @@
     "format": "prettier --write app components/mend lib server tests docs prisma",
     "format:check": "prettier --check app components/mend lib server tests docs prisma",
     "test:ui": "vitest run",
-    "benchmark": "node --experimental-strip-types scripts/evaluation/benchmark.ts"
+    "benchmark": "node --experimental-strip-types scripts/evaluation/benchmark.ts",
+    "verify:report": "node --experimental-strip-types scripts/verify-report.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.67",

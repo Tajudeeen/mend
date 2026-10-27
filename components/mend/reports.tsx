@@ -1,5 +1,6 @@
 "use client";
 import type { EventDoc } from "@/lib/model";
+import { reportEvidence } from "@/lib/report-evidence";
 import { Download, ArrowRight } from "lucide-react";
 export default function Reports({ doc }: { doc: EventDoc }) {
   return (
@@ -74,23 +75,45 @@ export default function Reports({ doc }: { doc: EventDoc }) {
                     fingerprint: r.fingerprint,
                     before: r.before,
                     after: r.after,
-                    evidence: doc.evidence.filter((e) =>
-                      r.evidenceIds.includes(e.id),
-                    ),
+                    evidence: reportEvidence(r, doc.evidence).receipts,
+                    missingEvidenceIds: reportEvidence(r, doc.evidence)
+                      .missingIds,
+                    decision: r.decisionSnapshot,
                   },
                   null,
                   2,
                 )}
               </pre>
             </details>
+            {reportEvidence(r, doc.evidence).missingIds.length > 0 && (
+              <p className="info-note" role="status">
+                Some historical source receipts are unavailable. This export
+                cannot establish their contents.
+              </p>
+            )}
             <button
               className="btn quiet"
               onClick={() => {
                 const a = document.createElement("a"),
                   u = URL.createObjectURL(
-                    new Blob([JSON.stringify(r, null, 2)], {
-                      type: "application/json",
-                    }),
+                    new Blob(
+                      [
+                        JSON.stringify(
+                          {
+                            ...r,
+                            evidenceSnapshot: reportEvidence(r, doc.evidence)
+                              .receipts,
+                            missingEvidenceIds: reportEvidence(r, doc.evidence)
+                              .missingIds,
+                          },
+                          null,
+                          2,
+                        ),
+                      ],
+                      {
+                        type: "application/json",
+                      },
+                    ),
                   );
                 a.href = u;
                 a.download = "mend-report-" + r.id + ".json";

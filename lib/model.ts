@@ -243,6 +243,14 @@ export type RecoveryReport = {
   evidenceIds: string[];
   limitations: string[];
   fingerprint?: CulturalFingerprint;
+  mode?: "demo" | "live";
+  evidenceSnapshot?: Evidence[];
+  decisionSnapshot?: {
+    scenario: Scenario;
+    optimizer: OptimizerConfig;
+    metrics: Metrics;
+    revision: number;
+  };
 };
 export type AgentStep = {
   id: string;

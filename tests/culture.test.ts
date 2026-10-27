@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { sampleEvent } from "../lib/seed.ts";
 import { culturalPoolKey } from "../lib/culture.ts";
 import { collect } from "../lib/qloo.ts";
-import { rankScore } from "../lib/planner.ts";
+import { rankScore, propose } from "../lib/planner.ts";
 import { fingerprint } from "../lib/fingerprint.ts";
 import { proposeRestoration } from "../lib/restoration.ts";
 import { applyCommand } from "../lib/commands.ts";
@@ -194,4 +194,28 @@ test("restoration cannot revive unavailable or locked-out historical participant
     () => proposeRestoration(current, historical),
     /earlier revision/,
   );
+});
+
+test("contract fixture affinities change live-mode repairs and removal never falls back to synthetic ranks", () => {
+  const doc = sampleEvent();
+  doc.mode = "live";
+  doc.candidates = doc.candidates.filter((c) => c.kind === "artist").slice(0, 3);
+  doc.candidates.forEach((c) => { c.entityId = c.id; c.verified = true; });
+  doc.slots = doc.slots.slice(0, 1);
+  doc.plan = doc.plan.slice(0, 1);
+  doc.zones = doc.zones.filter((z) => z.kind === "artist");
+  doc.optimizer = { version: "rank-v2", relevance: 100, balance: 0, continuity: 0, stability: 0, maxNodes: 1000 };
+  doc.evidence = doc.brief.cohorts.map((co) => ({
+    id: crypto.randomUUID(), provider: "qloo" as const, at: new Date().toISOString(),
+    endpoint: "/v2/insights", params: {}, responseHash: "contract-fixture-not-live",
+    rawResponse: {}, explainability: {}, cohortId: co.id, kind: "artist" as const,
+    normalization: "Contract fixture only", poolKey: culturalPoolKey(doc.candidates, "artist"),
+    entities: { a1: 0.5, a2: 0.9, a3: 0.1 },
+  }));
+  const scenario = { type: "cancellation" as const, candidateId: "a1" };
+  assert.equal(propose(doc, scenario).options[0].assignments[0].candidateId, "a2");
+  doc.evidence.forEach((e) => { e.entities.a2 = 0.1; e.entities.a3 = 0.9; });
+  assert.equal(propose(doc, scenario).options[0].assignments[0].candidateId, "a3");
+  doc.evidence = [];
+  assert.throws(() => propose(doc, scenario), /collect Qloo evidence/);
 });

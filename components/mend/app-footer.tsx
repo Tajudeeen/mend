@@ -30,6 +30,9 @@ export default function AppFooter() {
           </div>
           <div>
             <span>THE DETAILS</span>
+            <Link href="/review">
+              Review the workflow <ArrowUpRight size={13} />
+            </Link>
             <Link href="/settings">
               Account & connections <ArrowUpRight size={13} />
             </Link>

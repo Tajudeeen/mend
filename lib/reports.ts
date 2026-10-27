@@ -1,5 +1,9 @@
 import { fingerprint } from "./fingerprint.ts";
-import type { EventDoc, RecoveryReport } from "./model";
+import {
+  defaultOptimizer,
+  type EventDoc,
+  type RecoveryReport,
+} from "./model.ts";
 export function recoveryReport(
   before: EventDoc,
   after: EventDoc,
@@ -8,12 +12,22 @@ export function recoveryReport(
     o = p.options.find((o) => o.id === p.selectedId)!;
   return {
     id: crypto.randomUUID(),
+    mode: after.mode,
+    evidenceSnapshot: structuredClone(
+      before.evidence.filter((e) => p.evidenceIds.includes(e.id)),
+    ),
+    decisionSnapshot: structuredClone({
+      scenario: p.scenario,
+      optimizer: p.optimizer ?? before.optimizer ?? defaultOptimizer,
+      metrics: o.metrics,
+      revision: before.revision,
+    }),
     proposalId: p.id,
     at: new Date().toISOString(),
     status: "approved",
     summary: `${before.brief.name}: organizer approved ${o.metrics.changes} assignment changes after ${p.scenario.type}.`,
-    before: before.plan,
-    after: after.plan,
+    before: structuredClone(before.plan),
+    after: structuredClone(after.plan),
     changes: after.plan.flatMap((a) => {
       const old = before.plan.find((b) => b.slotId === a.slotId);
       if (old?.candidateId === a.candidateId && old.zoneId === a.zoneId)

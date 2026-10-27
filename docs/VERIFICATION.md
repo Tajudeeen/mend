@@ -44,3 +44,18 @@ All 39 native tests and 30 Vitest tests passed, with TypeScript and ESLint passi
 - Supabase production sign-in/session/callback flow is not verified.
 - Browser/mobile/keyboard/accessibility QA was unavailable in this authoring environment. No browser walkthrough or visual QA is claimed.
 - GitHub Actions is committed but its remote run must be checked after publication.
+
+
+## Host and product acceptance pass, October 27, 2026
+
+- GitHub metadata confirms `Tajudeeen/mend` is public. Root MIT license and third-party notices remain present.
+- The Sites publication is owner-private and has no Qloo/model environment entries. Public judge access and credentialed integration proof remain open.
+- New approved reports snapshot receipts, scenario, optimizer and selected metrics. Exports disclose legacy missing sources. A detached snapshot regression verifies later evidence/assignment changes cannot rewrite the original report.
+- The agent discards previous proposals before a run. Approval-ready status now requires reading the plan/constraints, generating a new proposal, validating constraints and evaluating continuity for the same option, then preparing approval. Negative tests cover a tool-free run with an old proposal and a generated-but-unvalidated option.
+- 42 native tests and 32 Vitest tests pass across the complete suite plus the added fixed-pool influence regression. That influence test uses authored contract fixtures, not live Qloo responses. It demonstrates that changing evidence can change the selected repair and removing evidence refuses live planning.
+- TypeScript and focused ESLint pass. The Next.js production build passes. The synthetic benchmark covers 20 scenarios and 40 runs with zero hard-constraint violations in returned options.
+- The report verifier accepts an intact synthetic response and rejects a modified response. Hash matching establishes stored-body integrity only, not provenance, live provider access or correct derived metrics.
+- Added `/review`, `HOST_REQUIREMENTS.md` and `SUBMISSION.md` to connect the product journey, host deliverables and honest release gates.
+- Browser preview was attempted through the supported Sites preview. Its CLI reported a running preview, but the cloud browser returned `ERR_CONNECTION_REFUSED`. Browser/mobile/accessibility QA remains unverified. No alternate browser route or network configuration was used.
+
+These checks do not complete the live-Qloo, live-model, public-access, deployed-auth or real-organizer gates.

@@ -59,6 +59,7 @@ try {
     ["/settings", "Account &amp; connections."],
     ["/demo", "Midnight Culture Market"],
     ["/study", "Put the workflow on the clock."],
+    ["/review", "One cancellation. A plan you can defend."],
   ]) {
     const page = await mf.dispatchFetch(base + route);
     assert.equal(page.status, 200, route + " must load as a document");

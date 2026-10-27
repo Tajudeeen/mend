@@ -15,7 +15,7 @@ Source of requirements: `docs/product-spec.md`, recovered from the supplied shar
 | 8 Benchmark           | Partial                                       | 20 synthetic scenarios, 40 rules/rank runs; live-Qloo and LLM-only comparisons not run                                                                                                        |
 | 9 Production QA       | Partial                                       | 65 domain/adapter/auth/session/connection/component/navigation/trial/intro tests, Worker smoke, RLS advisor, ownership checks; browser, deployed auth and PostgreSQL application tests remain |
 | 10 Deployment         | Partial                                       | Sites compatibility URL works; Vercel environment setup blocked by team-scope authorization                                                                                                   |
-| 11 Submission         | Incomplete                                    | Public repository visibility, live evidence, screenshots, impact study and final judge verification remain                                                                                    |
+| 11 Submission         | Incomplete                                    | Public repository confirmed October 27; public demo access, live evidence, screenshots, impact study and final judge verification remain                                                                                    |
 
 See `RELEASE_0.3.md` for this release’s implementation details and limitations.
 

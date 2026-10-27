@@ -1,6 +1,7 @@
 import { test, expect, vi, afterEach } from "vitest";
 import { investigate } from "../server/agent";
 import { sampleEvent } from "../lib/seed";
+import { propose } from "../lib/planner";
 const env = {
   LLM_API_KEY: "contract-test-key",
   LLM_BASE_URL: "https://configured-provider.invalid/v1",
@@ -33,6 +34,8 @@ test("provider adapter refuses missing configuration without making a network ca
 test("structured language workflow uses registered tools and never applies a proposed repair", async () => {
   const d = sampleEvent(),
     original = structuredClone(d.plan);
+  const optionId = propose(d, { type: "cancellation", candidateId: "a1" })
+    .options[0].id;
   let i = 0;
   const calls = [
     ["get_event_plan", {}],
@@ -41,6 +44,8 @@ test("structured language workflow uses registered tools and never applies a pro
       "generate_feasible_allocations",
       { type: "cancellation", candidateId: "a1" },
     ],
+    ["validate_hard_constraints", { optionId }],
+    ["evaluate_cultural_continuity", { optionId }],
     ["prepare_approval_request", {}],
   ] as const;
   vi.stubGlobal(
@@ -127,4 +132,61 @@ test("failed provider responses do not persist raw upstream secrets in a run", a
   expect(result.run.state).toBe("failed");
   expect(result.event.proposal).toBeUndefined();
   expect(JSON.stringify(result.run)).not.toContain("contract-test-key");
+});
+
+test("a prior proposal cannot make a tool-free agent run await approval", async () => {
+  const d = sampleEvent();
+  d.proposal = propose(d, { type: "cancellation", candidateId: "a1" });
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      response(
+        JSON.stringify({
+          status: "awaiting_approval",
+          claims: [],
+        }),
+      ),
+    ),
+  );
+  const out = await investigate(d, "Review the cancelled performer", env);
+  expect(out.run.state).toBe("needs_information");
+  expect(out.event.proposal).toBeUndefined();
+  expect(out.event.plan).toEqual(d.plan);
+});
+
+test("generating a proposal without validation cannot produce an approval-ready run", async () => {
+  const calls = [
+    ["get_event_plan", {}],
+    ["get_event_constraints", {}],
+    [
+      "generate_feasible_allocations",
+      { type: "cancellation", candidateId: "a1" },
+    ],
+  ] as const;
+  let i = 0;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => {
+      if (i < calls.length) {
+        const [name, args] = calls[i++];
+        return response(null, [
+          {
+            id: "call-" + i,
+            type: "function",
+            function: { name, arguments: JSON.stringify(args) },
+          },
+        ]);
+      }
+      return response(
+        JSON.stringify({ status: "awaiting_approval", claims: [] }),
+      );
+    }),
+  );
+  const out = await investigate(
+    sampleEvent(),
+    "Repair the cancelled performer",
+    env,
+  );
+  expect(out.event.proposal?.options.length).toBeGreaterThan(0);
+  expect(out.run.state).toBe("needs_information");
 });
