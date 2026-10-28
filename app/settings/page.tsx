@@ -72,6 +72,16 @@ export default function Settings() {
                 Sign in with ChatGPT
               </a>
             </>
+          ) : health.auth === "not-configured" ? (
+            <div role="status">
+              <p>
+                Account sign-in is not set up on this deployment yet. Please
+                contact the organizer administrator to enable it.
+              </p>
+              <Link href="/demo" className="btn quiet">
+                Explore the sample
+              </Link>
+            </div>
           ) : signedIn ? (
             <>
               <p>

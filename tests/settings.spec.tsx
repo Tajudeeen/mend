@@ -74,3 +74,21 @@ test("connection results remain separate from configured status and signout clea
     ).disabled,
   ).toBe(true);
 });
+
+test("missing auth configuration explains the blocker before asking for credentials", async () => {
+  const fetcher = vi.fn(async (url: string, _options?: RequestInit) =>
+    Response.json(
+      url === "/api/health" ? { auth: "not-configured" } : { signedIn: false },
+    ),
+  );
+  vi.stubGlobal("fetch", fetcher);
+  render(<Settings />);
+  expect(await screen.findByText(/Account sign-in is not set up/)).toBeTruthy();
+  expect(screen.queryByLabelText("Password")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Sign in" })).toBeNull();
+  expect(
+    fetcher.mock.calls.every(
+      ([, options]) => !(options as RequestInit | undefined)?.method,
+    ),
+  ).toBe(true);
+});
