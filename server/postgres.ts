@@ -38,7 +38,38 @@ export function postgresReady(): Promise<boolean> {
       });
       return true;
     },
-  ).catch(() => false);
+  ).catch((error: unknown) => {
+    // Log classified diagnostics only, never provider messages or connection strings.
+    const e = error as {
+      code?: string;
+      message?: string;
+      meta?: { driverAdapterError?: { cause?: { originalCode?: string } } };
+    };
+    const message = String(e.message ?? "");
+    const reason = /certificate|SSL|TLS|self.signed/i.test(message)
+      ? "tls"
+      : /password|SASL|Tenant or user/i.test(message)
+        ? "credentials"
+        : /permission denied/i.test(message)
+          ? "permissions"
+          : /timed out|timeout/i.test(message)
+            ? "timeout"
+            : /ENOTFOUND|EAI_AGAIN/i.test(message)
+              ? "dns"
+              : /does not exist|P2021/i.test(message)
+                ? "schema"
+                : "connection";
+    const code = String(e.code ?? "");
+    const driverCode = String(
+      e.meta?.driverAdapterError?.cause?.originalCode ?? "",
+    );
+    console.error("MEND database readiness failed", {
+      reason,
+      code: /^[A-Z0-9_]{1,24}$/.test(code) ? code : "unknown",
+      driverCode: /^[A-Z0-9_]{1,24}$/.test(driverCode) ? driverCode : "unknown",
+    });
+    return false;
+  });
   readiness = { expires: Date.now() + 30000, result };
   return result;
 }
