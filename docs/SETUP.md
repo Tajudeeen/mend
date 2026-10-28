@@ -1,6 +1,6 @@
 # Connect MEND's live services
 
-The existing preview is https://mend-events.deeen-code.chatgpt.site. It uses ChatGPT identity and D1. The primary Next.js/Supabase deployment is separate and has not yet been verified live.
+The primary application is https://mend-deeencodes.vercel.app, deployed on Vercel with Next.js. It uses Supabase Auth and PostgreSQL for saved organizer events. The deployment is ready; live authentication, persistence and provider workflows still require configuration and verification. The retired ChatGPT Site link is no longer the review or submission destination. Compatibility code retains its separate identity and storage boundaries.
 
 ## 1. Request Qloo access
 
@@ -39,11 +39,11 @@ Get its URL and publishable key through the project Connect dialog. Configure:
 
 Get database endpoint/connection details from Supabase Connect. Use the limited runtime login, not an admin or RLS-bypass role. The previous direct connection failed DNS resolution; verify the chosen endpoint from the application host. Migration baselining remains pending. Follow `docs/DEPLOYMENT.md` before any Prisma migration deployment against this existing database.
 
-In Vercel, select the team containing the existing `mend` project, then open Settings → Environment Variables. The connected integration previously received HTTP 403 for the `deeencodes` team scope. Check that the connected account/integration can access this project and manage production environment variables. Reconnect the Vercel integration to that authorized team if necessary. If you cannot change production variables yourself, a team owner/project administrator can configure them. References: https://vercel.com/docs/project-configuration/project-settings and https://vercel.com/docs/rbac/access-roles.
+In Vercel, select the team containing the existing `mend` project, then open Settings → Environment Variables. The connected Vercel integration can now inspect the project and its successful production deployment; the earlier team-scope HTTP 403 is historical. Configure the production environment for this project. References: https://vercel.com/docs/project-configuration/project-settings and https://vercel.com/docs/rbac/access-roles.
 
 Add the applicable variables above and the Qloo/model variables, choose Node 24 and build command `pnpm build:node`, then create a new deployment. Environment changes apply to new deployments. Keep all secrets out of chat, Git and browser-exposed variables. Only the two Supabase public values use `NEXT_PUBLIC_`.
 
-In Supabase Auth → URL Configuration, set the production Site URL and allow `https://YOUR-NODE-ORIGIN/auth/callback`. Use your actual deployed origin. The signup flow sets this callback explicitly. Both PKCE code callbacks and email token-hash callbacks are supported. For the token-hash email flow, the confirmation template link is:
+In Supabase Auth → URL Configuration, set the production Site URL to `https://mend-deeencodes.vercel.app` and allow `https://mend-deeencodes.vercel.app/auth/callback`. The signup flow sets this callback explicitly. Both PKCE code callbacks and email token-hash callbacks are supported. For the token-hash email flow, the confirmation template link is:
 
 ```html
 <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"
@@ -53,7 +53,7 @@ In Supabase Auth → URL Configuration, set the production Site URL and allow `h
 
 See https://supabase.com/docs/guides/auth/server-side/creating-a-client and https://supabase.com/docs/guides/getting-started/tutorials/with-nextjs. Configure templates and redirect allowlists in the same Supabase project used by the Node deployment. MEND shows confirmation-required state, sign-in, current-session sign-out and automatic cookie renewal. Supabase remains responsible for rate limiting signup/sign-in requests.
 
-For the existing Sites deployment, set only `QLOO_API_KEY`, `QLOO_API_BASE`, `LLM_API_KEY`, `LLM_BASE_URL` and `LLM_MODEL` in that deployment's server environment. Supabase configuration on Vercel does not configure the separate Sites Worker.
+Vercel is the deployment to configure and share. The retained compatibility runtime has separate server configuration and does not receive Vercel environment changes.
 
 ## 4. Verify live behavior
 

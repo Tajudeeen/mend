@@ -101,3 +101,10 @@ Live Qloo/model repair, anonymous hosting access, deployed primary authenticatio
 ## Vercel packaging follow-up, October 28, 2026
 
 The supplied Vercel log for `2ffccdc` passed compilation, TypeScript and page generation, then failed `NEXT_OUTPUT_DIR_MISSING`: the adapter searched `.next` while Next emitted `.next-node`. The repository now explicitly configures `vercel.json` `outputDirectory` as `.next-node`, and its repository check imports the actual Next config to prevent drift. `engines.node` is pinned to `24.x`. Local build success does not alone establish successful Vercel packaging; the next remote deployment must be checked.
+
+
+## 2026-10-28: Vercel becomes the primary shared URL
+
+README, setup, host checklist and submission links now use `https://mend-deeencodes.vercel.app`. The former ChatGPT Site URL is removed from current entry points; compatibility source and dated evidence remain preserved. No saved data or identities were migrated.
+
+Production deployment `dpl_zZ6DuxJ4ehQKiFrwNrfoBeZTUyot` reached READY for commit `9f73a766e7a91eb192d1c4e487b6a1a740a8bbdd`. Authenticated deployment fetches returned HTTP 200 for `/demo` and `/api/health`. Health reported runtime `next-node`, Qloo/model unavailable and persistence/auth not configured. A separate unauthenticated HTTP request following redirects ended on Vercel login, not the sample. Deployment readiness does not yet prove anonymous judge access or a live organizer workflow.

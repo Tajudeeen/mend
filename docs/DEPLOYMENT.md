@@ -20,17 +20,17 @@ This baselining has not been run. Do not execute initial CREATE statements again
 
 `DIRECT_URL` is for an authorized migration role. `DATABASE_URL` must use the limited application login (`mend_runtime` on the provisioned project), TLS and a reachable direct or compatible pooled endpoint. The runtime login has no superuser, create-role, create-database or RLS-bypass privileges. Its grants are restricted to the exact application tables: CRUD on mutable event/operational/key tables; SELECT/INSERT on append-only history/evidence/report/run/audit tables; schema usage and `auth.uid()` execution. Provision a unique password securely; do not put it in migrations. Runtime credentials are not migration credentials.
 
-The Vercel `mend` project was created, but environment configuration returned HTTP 403 for the connected team scope. No Vercel production deployment is claimed. The authoring environment's direct database test also failed DNS resolution. Supabase schema checks and a SQL RLS test do not prove the Prisma application transaction path. After connectivity is resolved, verify create, normalized writes, evidence/report/run persistence, stale writes, request replay and cross-owner denial with the runtime role.
+The primary application is https://mend-deeencodes.vercel.app. Vercel production deployment `dpl_zZ6DuxJ4ehQKiFrwNrfoBeZTUyot` reached READY at source commit `9f73a766e7a91eb192d1c4e487b6a1a740a8bbdd`. Authenticated deployment checks returned HTTP 200 for `/demo` and `/api/health`; health reported database/auth unconfigured and Qloo/model unavailable. The earlier connected-team HTTP 403 is historical. An anonymous check on October 28 still redirected to Vercel sign-in. The authoring environment's direct database test also failed DNS resolution. Supabase schema checks and a SQL RLS test do not prove the Prisma application transaction path. After connectivity is resolved, verify create, normalized writes, evidence/report/run persistence, stale writes, request replay and cross-owner denial with the runtime role.
 
 Set Supabase Auth site/redirect URLs to the deployed Node origin and `/auth/callback`. Verify email confirmation, sign-in, sign-out and session renewal end to end. No account credentials are included in source.
 
 ## Compatibility target
 
-The existing Sites URL uses Vinext/Worker, D1 and ChatGPT identity. `pnpm build` packages that target. `drizzle/` contains its ordered migrations; the source/deployment workflow applies them through the configured D1 binding. `node tests/worker-smoke.mjs` runs the built artifact locally with Miniflare.
+The retained Sites compatibility runtime uses Vinext/Worker, D1 and ChatGPT identity. `pnpm build` packages that target. `drizzle/` contains its ordered migrations; the source/deployment workflow applies them through the configured D1 binding. `node tests/worker-smoke.mjs` runs the built artifact locally with Miniflare.
 
 Compatibility storage and Supabase storage are separate. Existing D1 owners cannot be silently treated as Supabase UUIDs. An explicit, verified account-link and migration process is required to transfer data.
 
-Qloo and model keys remain unset. The public sample is fictional and client-local; server-saved data requires authentication. Preserve access controls when publishing. Repository visibility is currently private and remains a separate release gate from the MIT license.
+Qloo and model keys remain unset. The public sample is fictional and client-local; server-saved data requires authentication. Preserve access controls when publishing. The GitHub repository is public. Anonymous judge access to the Vercel application remains a separate gate from source visibility and the MIT license.
 
 
 ## Vercel output directory

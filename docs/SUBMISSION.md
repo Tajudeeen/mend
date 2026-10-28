@@ -12,13 +12,14 @@ Qloo provides entity resolution, cultural discovery and fixed-pool audience affi
 
 ## Reviewer path
 
-- Walkthrough: https://mend-events.deeen-code.chatgpt.site/review
-- Sample: https://mend-events.deeen-code.chatgpt.site/demo
+- Application: https://mend-deeencodes.vercel.app
+- Walkthrough: https://mend-deeencodes.vercel.app/review
+- Sample: https://mend-deeencodes.vercel.app/demo
 - Source: https://github.com/Tajudeeen/mend
 - License: MIT, with retained third-party notices.
 - Setup and limitations: README and `docs/SETUP.md`.
 
-The Site currently requires owner access. Do not submit that URL as publicly accessible until sharing is changed and anonymous access is tested.
+Vercel replaces the former ChatGPT Site as the submission destination. The production deployment is ready, but an anonymous check on October 28 redirected to Vercel sign-in. Verify anonymous access to this URL before describing it as publicly accessible.
 
 Open the sample, withdraw the opening act, inspect alternatives, approve and inspect the Recovery reports. The sample is fictional, browser-local and uses synthetic preferences. Live events require configured server services and authenticated persistence.
 

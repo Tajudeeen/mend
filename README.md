@@ -4,13 +4,13 @@ Keep the feeling. Repair the plan.
 
 MEND helps music-led market and cultural pop-up organizers repair a programme after a performer cancels, a vendor withdraws, weather closes a zone or the budget changes. It combines cultural evidence with practical constraints, then leaves the decision with the organizer.
 
-- Hosted preview: https://mend-events.deeen-code.chatgpt.site
-- Reviewer walkthrough: https://mend-events.deeen-code.chatgpt.site/review
-- Sample event: https://mend-events.deeen-code.chatgpt.site/demo
-- Report source checker: https://mend-events.deeen-code.chatgpt.site/verify
+- Application: https://mend-deeencodes.vercel.app
+- Reviewer walkthrough: https://mend-deeencodes.vercel.app/review
+- Sample event: https://mend-deeencodes.vercel.app/demo
+- Report source checker: https://mend-deeencodes.vercel.app/verify
 - Source: https://github.com/Tajudeeen/mend
 
-The hosted preview is currently owner-private. The fictional sample needs no organizer account once the host grants access, but private hosting still prevents anonymous judge access. Qloo access was requested October 28. Live Qloo/model repair, public judge access, primary production auth/persistence and real organizer impact remain unverified. Do not treat this preview as an eligible final submission yet.
+Vercel is the primary hosted application. Its production deployment is ready and its sample and health routes have responded successfully through authenticated deployment checks. An anonymous check on October 28 still redirected to Vercel sign-in, so judge access remains pending. The fictional sample needs no organizer account after hosting access is granted. Qloo access was requested October 28. Live Qloo/model repair, public judge access, primary production auth/persistence and real organizer impact remain unverified. Do not treat this deployment as an eligible final submission yet.
 
 ## Try the workflow
 
