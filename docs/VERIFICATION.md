@@ -108,3 +108,18 @@ The supplied Vercel log for `2ffccdc` passed compilation, TypeScript and page ge
 README, setup, host checklist and submission links now use `https://mend-deeencodes.vercel.app`. The former ChatGPT Site URL is removed from current entry points; compatibility source and dated evidence remain preserved. No saved data or identities were migrated.
 
 Production deployment `dpl_zZ6DuxJ4ehQKiFrwNrfoBeZTUyot` reached READY for commit `9f73a766e7a91eb192d1c4e487b6a1a740a8bbdd`. Authenticated deployment fetches returned HTTP 200 for `/demo` and `/api/health`. Health reported runtime `next-node`, Qloo/model unavailable and persistence/auth not configured. A separate unauthenticated HTTP request following redirects ended on Vercel login, not the sample. Deployment readiness does not yet prove anonymous judge access or a live organizer workflow.
+
+
+## 2026-10-28: production authentication redirect and database connection
+
+GitHub dashboard authentication completed. The Supabase URL Configuration page showed the original Site URL `http://localhost:3000` and no redirect allowlist. Saved the production Site URL `https://mend-deeencodes.vercel.app` and exact `/auth/callback` URLs for that domain and the existing `usemend.vercel.app` alias. The dashboard showed both entries after saving. Existing emailed links are not rewritten; a fresh confirmation flow still needs user verification.
+
+Configured production `DATABASE_URL` for the existing limited `mend_runtime` role through the transaction pooler assigned by the project's Connect dialog. Its role has no superuser, create-role, create-database or RLS-bypass privileges; RLS remains enabled on all twelve application tables. Credentials remain server-side. No initial migrations were reapplied.
+
+The first deployed database probe failed. Redacted runtime logs classified the failure as TLS, Prisma code `P1011`. Downloaded the Supabase Root 2021 CA from the certificate link in this project's Database Settings and configured `DATABASE_CA_CERT`. The adapter explicitly preserves certificate/hostname verification and prevents URL SSL parameters from replacing its TLS configuration.
+
+Production deployment `dpl_HPcfwtuaMpXTMFZZTS3C1MNR3zmZ`, source `54e88ba1f95735d0bafbd7ce0d06cc815c02ba57`, reached READY. Its `/api/health?probe=database` returned HTTP 200 with `databaseReady: true` through authenticated deployment fetching. This exercises the real Prisma transaction/table-read path and rejects elevated roles. It does not prove an organizer event write or completed registration.
+
+All eleven `pnpm verify` stages passed at the corresponding clean local source tree: repository, secret patterns, Prisma generation, TypeScript, lint, native tests, component/provider tests, synthetic benchmark, Node build, Worker build and local Worker/D1 workflow. The synthetic benchmark ran 20 cases/40 searches with zero hard-constraint violations. These remain separate from live Qloo/model verification.
+
+A separate rollback-only production SQL write/isolation check was attempted through the management connector, but its session was denied `SET ROLE mend_runtime` before any insert. No permission was expanded to make the test pass. Authenticated create/reload, write isolation, full confirmation/cookie flow, anonymous judge access and live provider repair remain pending deployment checks.
