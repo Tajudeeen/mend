@@ -68,10 +68,32 @@ test.each([
       ["validate_hard_constraints", { optionId }],
       ["evaluate_cultural_continuity", { optionId }],
       ["prepare_approval_request", {}],
+      ...(label === "Groq GPT-OSS"
+        ? [
+            [
+              "finish_investigation",
+              {
+                status: "awaiting_approval",
+                claims: [
+                  {
+                    kind: "operational",
+                    text: "A proposal is ready for organizer review.",
+                    evidenceIds: [],
+                  },
+                ],
+              },
+            ],
+          ]
+        : []),
     ] as const;
     vi.stubGlobal(
       "fetch",
       vi.fn(async (_url, options) => {
+        const wire = JSON.parse(options.body);
+        for (const entry of wire.tools)
+          expect(entry.function.parameters.type, entry.function.name).toBe(
+            "object",
+          );
         if (label === "Groq GPT-OSS") {
           const body = JSON.parse(options.body);
           expect(body.reasoning_effort).toBe("low");

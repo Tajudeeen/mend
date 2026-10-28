@@ -57,6 +57,7 @@ export const agentTools = [
   "evaluate_cultural_continuity",
   "inspect_evidence",
   "prepare_approval_request",
+  "finish_investigation",
 ] as const;
 export function recordStep(
   run: AgentRun,

@@ -3,13 +3,85 @@ import { checkConnections } from "../server/connections";
 import { configuredModel, modelCallOptions } from "../server/model-provider";
 import { investigate } from "../server/agent";
 import { sampleEvent } from "../lib/seed";
+import { newEvent } from "../lib/new-event";
 const env = {
   LLM_API_KEY: "gsk_contract_test_not_a_real_key",
   LLM_BASE_URL: "https://api.groq.com/openai/v1",
   LLM_MODEL: "openai/gpt-oss-20b",
 };
 afterEach(() => vi.unstubAllGlobals());
-test("Groq agent avoids native response formatting during tools and validates final JSON without changing the plan", async () => {
+test("Groq reads an incomplete event before submitting a typed missing-information report", async () => {
+  const names = [
+    "get_event_plan",
+    "get_event_constraints",
+    "finish_investigation",
+  ];
+  let calls = 0;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url, options) => {
+      const body = JSON.parse(String(options.body));
+      const name = names[calls++];
+      expect(
+        body.tools.map((t: { function: { name: string } }) => t.function.name),
+      ).toEqual([name]);
+      expect(body.tool_choice).toEqual({
+        type: "function",
+        function: { name },
+      });
+      const args =
+        name === "finish_investigation"
+          ? {
+              status: "needs_information",
+              claims: [
+                {
+                  kind: "limitation",
+                  text: "Programme slots and zones are missing. Booking terms remain unconfirmed.",
+                  evidenceIds: [],
+                },
+              ],
+            }
+          : {};
+      return Response.json({
+        id: "groq-step",
+        object: "chat.completion",
+        created: 1,
+        model: env.LLM_MODEL,
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: null,
+              tool_calls: [
+                {
+                  id: `call-${calls}`,
+                  type: "function",
+                  function: { name, arguments: JSON.stringify(args) },
+                },
+              ],
+            },
+            finish_reason: "tool_calls",
+          },
+        ],
+        usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+      });
+    }),
+  );
+  const doc = newEvent(sampleEvent().brief);
+  const result = await investigate(
+    doc,
+    "Read the event and report missing inputs",
+    env,
+  );
+  expect(calls).toBe(3);
+  expect(result.run.steps.map((s) => s.tool)).toEqual(names);
+  expect(result.run.state).toBe("needs_information");
+  expect(result.run.error).toBeUndefined();
+  expect(result.event.plan).toEqual(doc.plan);
+  expect(result.event.proposal).toBeUndefined();
+});
+test("compatible agent validates final JSON without native response formatting or plan changes", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (_url, options) => {
@@ -54,11 +126,12 @@ test("Groq agent avoids native response formatting during tools and validates fi
     }),
   );
   const doc = sampleEvent();
-  const result = await investigate(
-    doc,
-    "Report missing booking information",
-    env,
-  );
+  const result = await investigate(doc, "Report missing booking information", {
+    ...env,
+    LLM_BASE_URL: "https://configured-provider.invalid/v1",
+    LLM_API_KEY: "contract-test-key",
+    LLM_MODEL: "contract-model",
+  });
   expect(result.run.state).toBe("needs_information");
   expect(result.event.plan).toEqual(doc.plan);
 });
