@@ -16,10 +16,12 @@ jobs:
           node-version: '24'
       - run: npm install --global pnpm@11.25.0
       - run: pnpm install --frozen-lockfile
-      - run: pnpm db:generate:postgres
-      - run: pnpm typecheck
-      - run: pnpm lint
-      - run: pnpm test
-      - run: pnpm test:ui
-      - run: node scripts/check-secrets.mjs
-      - run: pnpm build:node
+      - run: pnpm verify
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: mend-local-verification
+          path: |
+            outputs/verification.json
+            outputs/synthetic-results.json
+          if-no-files-found: warn

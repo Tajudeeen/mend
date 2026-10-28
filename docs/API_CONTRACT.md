@@ -6,7 +6,7 @@ All JSON responses are uncached. The primary target authenticates Supabase sessi
 
 `GET /api/mend` lists owned events and Qloo configuration status. `GET /api/mend?id=<UUID>` returns an owned event and audit; `history=1` includes recent snapshots.
 
-`POST /api/mend` requires JSON and rejects mismatched browser origins. Body limit: 40,000 characters. Event mutations require `id` and current integer `revision`. Optional UUID `requestKey` replays the original persisted result for the owner. Reuse it only for the same intent. Create/search do not need a prior revision.
+`POST /api/mend` requires JSON and requires a matching Origin header. Body limit: 40,000 UTF-8 bytes, enforced while streaming. Event mutations require `id` and current integer `revision`. Optional UUID `requestKey` replays the original persisted result for the owner. Reuse it only for the same intent. Create/search do not need a prior revision.
 
 | Action | Purpose |
 | --- | --- |
@@ -37,6 +37,6 @@ Errors use `{error}`. Authentication failure returns 401, missing owned event 40
 
 ## Qloo boundary
 
-Search supports artists and vendor places; discovery also supports brands. Tags use `/v2/tags?filter.query=...`. Insights uses `/v2/insights` with `filter.type`, explicit seed entities, a fixed `filter.results.entities` pool, and explainability. Authentication uses server-only `x-api-key`. Finite scores and complete candidate coverage are required. Timeouts, bounded retries and local concurrency limits apply.
+Search supports artists, vendor places and brands; discovery supports artists and vendor places. Tags use `/v2/tags?filter.query=...`. Insights uses `/v2/insights` with `filter.type`, explicit seed entities, a fixed `filter.results.entities` pool, and explainability. Authentication uses server-only `x-api-key`. Finite scores and complete candidate coverage are required. Timeouts, bounded retries and local concurrency limits apply.
 
 Reference contracts were reviewed on 2026-10-17 and exercised with mocks. No credentialed live Qloo response is claimed. Place-reference proxy workflows are implemented and mocked-contract tested; live validation and Analysis Compare remain open.

@@ -232,7 +232,11 @@ function excludedAllergens(doc: EventDoc, scenario: Scenario) {
   );
 }
 
-export function propose(doc: EventDoc, scenario: Scenario): Proposal {
+export function propose(
+  doc: EventDoc,
+  scenario: Scenario,
+  strategy: "cultural" | "rules-only" = "cultural",
+): Proposal {
   if (
     scenario.type === "cancellation" &&
     !doc.candidates.some((c) => c.id === scenario.candidateId)
@@ -253,6 +257,17 @@ export function propose(doc: EventDoc, scenario: Scenario): Proposal {
     )
   )
     throw new Error("Vendor offering not found.");
+  if (strategy === "rules-only")
+    doc = {
+      ...doc,
+      optimizer: {
+        ...(doc.optimizer ?? defaultOptimizer),
+        relevance: 0,
+        balance: 0,
+        continuity: 0,
+        stability: 100,
+      },
+    };
   const start = performance.now(),
     r = effective(doc, scenario),
     config = doc.optimizer ?? defaultOptimizer;
@@ -265,15 +280,21 @@ export function propose(doc: EventDoc, scenario: Scenario): Proposal {
     throw new Error("Add at least one program slot before planning.");
   const supported = (id: string) =>
     doc.brief.cohorts.every((co) => rankScore(doc, id, co.id) !== undefined);
-  if (doc.mode === "live" && !doc.candidates.some((c) => supported(c.id)))
+  if (
+    strategy === "cultural" &&
+    doc.mode === "live" &&
+    !doc.candidates.some((c) => supported(c.id))
+  )
     throw new Error(
       "Resolve participants and collect Qloo evidence before planning in live mode.",
     );
   const rank = (id: string) =>
-    doc.brief.cohorts.reduce(
-      (n, c) => n + (rankScore(doc, id, c.id) ?? 0) * c.weight,
-      0,
-    );
+    strategy === "rules-only"
+      ? 0
+      : doc.brief.cohorts.reduce(
+          (n, c) => n + (rankScore(doc, id, c.id) ?? 0) * c.weight,
+          0,
+        );
   const eligible = doc.slots.map((s) => {
     const old = doc.plan.find((a) => a.slotId === s.id);
     return doc.candidates
@@ -285,7 +306,9 @@ export function propose(doc: EventDoc, scenario: Scenario): Proposal {
           !r.unavailable.includes(c.id) &&
           c.from <= s.from &&
           c.to >= s.to &&
-          (doc.mode === "demo" || supported(c.id)) &&
+          (strategy === "rules-only" ||
+            doc.mode === "demo" ||
+            supported(c.id)) &&
           (!doc.locks?.includes(s.id) || c.id === old?.candidateId),
       )
       .sort(

@@ -83,3 +83,16 @@ Live credentials, production authentication, browser/device QA and public judge 
 - Tests cover current/stale cultural pools, blank events, unknown terms, report tampering and the local file UI. No live provider credential is required by these checks.
 
 Provider access and browser/device QA remain separate gates. The previous supported browser preview returned a connection refusal, so no browser/device verification is claimed by the component tests.
+
+
+## Host alignment and repository cleanup, October 28, 2026
+
+The checked `host-requirements.json` preserves eight host gates, all four equally weighted criteria, the optional-video rule and the deadline. `check-repo.mjs` checks required source/evidence paths, licensing, documentation links and generated-output exclusions. File presence does not certify external compliance.
+
+Removed the 61 starter UI components, their unused mobile hook/utility/configuration, three unused stock SVGs and 18 unused direct dependencies. The one connector recovery action that used the starter button now uses the existing native link styling. Kept the full application, original specification, host checklist, deployment adapters, font/build licenses and historical verification/evaluation artifacts. Rewrote the README as an entry point and added `docs/README.md`; historical release notes remain historical.
+
+Added a read-only comparison of cultural and rules-only repairs. Both retain the same roster, operational constraints and node limit. The baseline ignores cultural ranking and prioritizes existing assignments. Live cultural comparison refuses missing evidence. The export includes replay inputs; `reproduce:comparison` re-executes the searches and rejects changed output assignments. Reproduction is not proof of Qloo authorship, live access, improved attendance or an LLM-only comparison. Truncated searches disclose their limitations.
+
+`pnpm verify` now runs repository/secret checks, Prisma generation, types, lint, domain/provider/component tests, synthetic benchmark, Node build, Worker build and the Worker/D1 workflow. It emits source metadata and exact pass/fail steps in ignored `outputs/verification.json`. CI runs this same command and retains reports as artifacts. Fresh benchmarks go to ignored outputs; historical benchmark files are not silently overwritten. Consult the generated report or CI run for this revision's actual execution result.
+
+Live Qloo/model repair, anonymous hosting access, deployed primary authentication/persistence, browser/device QA, organizer impact and Devpost confirmation remain unverified. This cleanup does not mark any of them complete.

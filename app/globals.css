@@ -3515,3 +3515,8 @@ footer > span:last-child {
 .readiness-list li > span { min-width: 5rem; font-size: .75rem; }
 .readiness-list button { text-align: left; white-space: normal; }
 @media (max-width: 600px) { .readiness-list li { align-items: flex-start; } }
+
+.comparison-table { overflow-x: auto; margin: 1rem 0; }
+.comparison-table table { width: 100%; min-width: 36rem; border-collapse: collapse; font-size: .85rem; }
+.comparison-table th, .comparison-table td { text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); padding: .6rem; }
+.comparison-table caption { text-align: left; margin-bottom: .5rem; }

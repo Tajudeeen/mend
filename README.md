@@ -2,96 +2,69 @@
 
 Keep the feeling. Repair the plan.
 
-MEND helps organizers of music-led markets and cultural pop-ups repair a programme when a performer withdraws, a vendor exits, a space closes or an offering becomes unavailable. It separates cultural evidence, operational constraints, uncertainty and human approval.
+MEND helps music-led market and cultural pop-up organizers repair a programme after a performer cancels, a vendor withdraws, weather closes a zone or the budget changes. It combines cultural evidence with practical constraints, then leaves the decision with the organizer.
 
-Working deployment: https://mend-events.deeen-code.chatgpt.site
+- Hosted preview: https://mend-events.deeen-code.chatgpt.site
+- Reviewer walkthrough: https://mend-events.deeen-code.chatgpt.site/review
+- Sample event: https://mend-events.deeen-code.chatgpt.site/demo
+- Report source checker: https://mend-events.deeen-code.chatgpt.site/verify
+- Source: https://github.com/Tajudeeen/mend
 
-Reviewer walkthrough: https://mend-events.deeen-code.chatgpt.site/review
+The hosted preview is currently owner-private. The fictional sample needs no organizer account once the host grants access, but private hosting still prevents anonymous judge access. Qloo access was requested October 28. Live Qloo/model repair, public judge access, primary production auth/persistence and real organizer impact remain unverified. Do not treat this preview as an eligible final submission yet.
 
-Browser-local source response checker: https://mend-events.deeen-code.chatgpt.site/verify
+## Try the workflow
 
-Sample workflow: https://mend-events.deeen-code.chatgpt.site/demo
+Open the sample, withdraw the opening performer, inspect alternatives and approve one repair. Open Recovery reports for the before/after record. Download a report and inspect it in `/verify`. The sample uses fictional people and synthetic preferences and makes no booking or attendance claim.
 
-Source: https://github.com/Tajudeeen/mend
+To challenge the safety behavior, lock the opening performer and simulate that performer cancelling. MEND must explain the conflict instead of silently breaking the lock. Approved disruptions persist as current event facts for subsequent repairs.
 
-## What is implemented
+In Repair studio, Compare repair strategies runs the cultural objective alongside a rules-only baseline with the same practical constraints. It never applies either result. The export includes its inputs and can be reproduced offline:
 
-- Landing page, registration-free sample workflow, event list and blank event setup.
-- Editable participant pool, known/unknown fees and availability, confirmation flags and menu inventory.
-- Configurable zones, dimensions, categories, power, programme slots and assignment drafts.
-- Conceptual floorplan with pointer/keyboard positioning, pan, zoom, locked zones and undo before save.
-- Performer/vendor withdrawal, rain, individual space closure, budget changes and declared offering substitution.
-- Versioned ordinal ranking and cultural continuity metrics with adjustable weights and bounded search.
-- Locked commitments, persistent approved incident facts, infeasibility/search-limit disclosure and conditional proposals for unknown terms.
-- Explicit approval, stale-proposal rejection, historical snapshots, approval-gated assignment restoration, before/after reports and exports.
-- Independent vendor proxy profiles and cultural/organizer-tag coverage fingerprints.
-- A local paired manual/MEND trial instrument at `/study`, with raw timing and failed-attempt exports.
-- Qloo search, tags, discovery, fixed-pool Insights, response receipts and explainability adapters.
-- Provider-configurable language agent with typed tools, execution limits and source-checked cultural statements.
-- Ownership checks, request limits, timeouts, bounded retries, transactional persistence and database RLS.
+```sh
+pnpm reproduce:comparison /absolute/path/to/mend-comparison.json
+```
 
-The public sample uses fictional participants and synthetic preference values. No live Qloo results, verified booking offers, organizer study or attendance/revenue benefit are claimed. The language agent has been exercised against mocked provider responses; a live model credential is still required.
+A different result is not proof of greater real-world usefulness. Synthetic and live evidence remain explicitly separated. Search bounds and unknown booking terms stay visible.
 
-## Architecture
+## Install and verify
 
-The production target follows the master plan: Next.js App Router and Node.js, React, TypeScript, Tailwind/CSS, Supabase Auth, Supabase PostgreSQL and Prisma 7. The database schema and ownership policies have been applied to the dedicated MEND Supabase project.
-
-The existing working URL is a **Sites compatibility deployment**, using Vinext rendering, ChatGPT identity and D1. It shares the UI, domain rules and agent/Qloo adapters with the Node target. These runtimes are explicitly distinguished by `/api/health` and the settings view. Existing D1 data has not been silently migrated to PostgreSQL.
-
-A Vercel MEND project was created, but its environment configuration returned a team-scope authorization error. The Next.js build succeeds locally. The Supabase/Prisma application connection, authenticated production flow and Vercel publication remain unverified until that access is resolved. Schema security-advisor checks and a cross-owner RLS test were run through Supabase.
-
-## Connect live services
-
-Start with [the setup guide](docs/SETUP.md) for Qloo access, model API keys, Supabase configuration and the Vercel team-permission fix. Account settings includes authenticated Qloo/model connection checks. A successful probe is separate from scored event evidence and full recovery verification.
-
-## Run and verify
-
-Use Node 24 and pnpm 11.25.0. Install from the committed lockfile:
+Use Node 24 and pnpm 11.25.0. No provider keys are needed for the synthetic/local checks:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm db:generate:postgres
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm test:ui
-pnpm benchmark
-pnpm build:node
+pnpm verify
 ```
 
-For the primary Next.js target, set the variables documented in `.env.example`, apply pending Prisma migrations with an authorized migration role, then use `pnpm dev:node` or `pnpm start:node`. Do not run production migrations with the limited application role. A public sample remains usable without database or model credentials.
+The verification command checks the repository/host manifest, secret patterns, types, lint, domain/provider/component tests, synthetic benchmark, both builds and the built Worker/D1 workflow. It stops on a failed check and records exactly what ran in ignored `outputs/verification.json`, including the source commit, source digest and dirty-tree flag. CI runs the same command and uploads its verification and synthetic benchmark artifacts. These are local execution results, not evidence of live provider access or public deployment.
 
-For the Sites compatibility target, its supported installer/build/source workflow applies. `pnpm build` generates the Prisma client and builds the compatibility artifact. `node tests/worker-smoke.mjs` tests the built Worker and D1 route flow.
+For local Node development use `pnpm dev:node`. The sample is available without live credentials. Saved organizer events require the server configuration in [SETUP.md](docs/SETUP.md). Do not run production migrations before following the existing-schema guidance in [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-## Cultural reasoning
+A downloaded approval report can be checked with:
 
-Raw Qloo affinities are never averaged across independent query contexts. MEND converts each fixed audience/domain pool into fractional midranks, then aggregates those ordinal values with disclosed weights. Continuity measures displacement from the approved reference rank vector. These are MEND planning heuristics, not official Qloo scores or calibrated outcomes. Missing evidence remains missing. A bounded search reports truncation and does not imply optimality or a proof of infeasibility when truncated.
+```sh
+pnpm verify:report /absolute/path/to/mend-report.json
+```
 
-Qloo entity resolution does not verify that a performer is available or that a restaurant will vend at the event. Unknown fees/terms make an option conditional. Live approval requires confirmation. Independent vendors can use one to three explicit, reverified place references with an organizer rationale. Proxy use is labeled in fingerprints and reports. Live proxy quality and broader market feasibility remain unverified.
+The browser and CLI share the checker. It checks stored source response hashes and missing references, not provider signatures or derived scores. Reports with no receipts are labeled as having no source evidence to verify.
 
-The 0.3 interface uses a poster landing, an actual running-order production desk and a compact participant register. See `docs/RELEASE_0.3.md`. The bundled display font is a renamed condensed derivative of DejaVu Sans Bold; notices are retained in `docs/FONT_LICENSE.txt`.
+## Meaningful Qloo integration
 
-## Judge walkthrough
+Organizers resolve audience interests and participant references using Qloo search. Fixed-pool Insights results provide query-relative affinities. MEND converts those values into ordinal ranks within each audience/domain context, then combines the disclosed objective with budget, schedule, footprint, capacity, power, category restrictions, availability and locks. Missing live evidence is never replaced with fixture preferences.
 
-1. Open `/demo`, which needs no account.
-2. Review the lineup and conceptual site.
-3. Open Repair studio and withdraw a performer or vendor, close one zone, or try rain/budget/offering loss.
-4. Compare the options, constraints, rank indices and disclosed unknowns.
-5. Approve a sample repair, then open Recovery reports to inspect the before/after record.
-6. For organizer data, use a saved authenticated event. Credentials must be configured before live cultural or language runs.
+Vendor profiles may use explicitly selected and reverified place references. Those are disclosed proxies, not identities or booking offers. Qloo does not establish fees, availability, ingredients or safety. Unknown terms block live approval. Physical clearance is unsupported by the conceptual canvas and nonzero spacing requests are rejected.
 
-The sample session is temporary browser state. Saved organizer events and approved reports use server persistence. MEND does not book, send outbound messages, take payments or certify venue/food safety.
+The bounded language agent reads event inputs, gathers evidence, generates alternatives, validates and evaluates an option, and prepares it for approval. It cannot approve, book, spend or send messages. It has been tested with mocked providers; live quality remains a gate.
 
-## Host requirements and product acceptance
+## Architecture and evidence
 
-The current repository is public and includes an MIT license. See [the host and product checklist](docs/HOST_REQUIREMENTS.md) and [the submission draft](docs/SUBMISSION.md). The Sites publication is currently owner-private and has no Qloo/model runtime credentials. Public judge access and live integration proof remain gates.
+The primary target is Next.js, React, TypeScript, Tailwind/CSS, Supabase Auth, PostgreSQL and Prisma. The existing Sites compatibility deployment uses Vinext, ChatGPT dispatch identity and D1. Shared domain code does not imply that identities or data were migrated. Both builds are checked; deployed Node/Supabase transactions and authentication remain unverified.
 
-New approved reports snapshot their source receipts and decision inputs, so later evidence refreshes cannot erase the historical sources. Legacy reports disclose missing sources. Download a report and open `/verify` to inspect its stored source responses without uploading the file. The same checker is available with `pnpm verify:report /absolute/path/to/mend-report.json`. Reports with no receipts are labeled as having no source evidence to check. This does not authenticate Qloo as issuer or validate derived scores.
+See the [documentation map](docs/README.md), [architecture](docs/ARCHITECTURE.md), [current status](docs/PLAN_STATUS.md) and [dated verification log](docs/VERIFICATION.md). Approvals preserve source receipts and decision inputs. Current baseline comparisons, historical benchmarks, fixture tests and live evidence have different proof boundaries.
 
-## Evidence and remaining gates
+## Host requirements remain mandatory
 
-See `docs/VERIFICATION.md`, `docs/PLAN_STATUS.md`, `docs/ARCHITECTURE.md`, `docs/cultural-continuity.md`, `docs/evaluation/` and the original `docs/product-spec.md`.
+The [host checklist](docs/HOST_REQUIREMENTS.md) preserves working Qloo-integrated agentic behavior, a public external demo, complete public source, a detectable open-source license, written functionality, entrant eligibility and registration, English/free testing access, and finalist availability. All four judging criteria have equal weight. Videos are optional. The deadline is October 30 at 11:45pm EDT, October 31 at 4:45am in Nigeria.
 
-Before submission: validate Qloo coverage across two markets, run credentialed cultural/model workflows, complete browser/mobile/accessibility QA, verify public judge access, resolve the Vercel scope, verify Supabase authentication and app-level transactions, and collect real organizer feedback. The synthetic benchmark is software verification, not proof of Qloo's impact.
+The [submission draft](docs/SUBMISSION.md) must be finalized with actual live evidence and anonymous access checks. A local green build does not close those gates.
 
-MIT licensed. Retained third-party notices remain applicable.
+MIT licensed. Retained [font notices](docs/FONT_LICENSE.txt) and [Sites build notices](build/sites-vite-plugin.LICENSE) remain applicable. Unused starter UI components and dependencies have been removed; product code, required assets, host records and historical evidence are retained.

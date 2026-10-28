@@ -1,6 +1,8 @@
 # MEND acceptance and submission checklist
 
-Reviewed 2026-10-27 against the [event overview](https://qloo.devpost.com/) and [official rules](https://qloo.devpost.com/rules). Host requirements and our product validation are separate. A source implementation is not proof of a live capability.
+Reviewed 2026-10-28 against the [event overview](https://qloo.devpost.com/) and [official rules](https://qloo.devpost.com/rules). Host requirements and our product validation are separate. A source implementation is not proof of a live capability.
+
+The checked manifest is [host-requirements.json](host-requirements.json). Repository checks protect the requirement list, not the external outcomes.
 
 ## Host gates
 

@@ -10,12 +10,12 @@ The governing requirements are the recovered conversation in `product-spec.md`. 
 4. Configure a live model and inspect bounded tool runs, references, refusal behavior and failure recovery. Do not infer model quality from mocked-provider tests.
 5. Complete browser, mobile, keyboard and accessibility QA. Run organizer usability sessions, correct issues and capture a real workflow demonstration.
 6. Extend evaluation to live Qloo, rules-only and LLM-only comparisons. Keep synthetic benchmarks separate from cultural relevance and organizer-impact evidence.
-7. Make the MIT repository and demo judge-accessible, capture screenshots/video, and confirm the final submission requirements directly.
+7. Keep the MIT repository public, make the demo judge-accessible, capture useful screenshots and confirm the final submission requirements directly. Video remains optional.
 
 The 0.3 release includes approval-gated assignment restoration and a local paired-trial instrument. Real participant evidence is still required.
 
 ## Product follow-ups
 
-Compound disruptions, event deletion, pagination, stronger idempotency payload matching/retention, distributed rate limiting, richer local preference/accessibility constraints and verified D1-to-Supabase identity migration remain open. Booking, payments, ticketing and outbound messaging remain outside this release.
+Simultaneous compound-disruption input, event deletion, pagination, stronger idempotency payload matching/retention, distributed rate limiting, richer local preference/accessibility constraints and verified D1-to-Supabase identity migration remain open. Booking, payments, ticketing and outbound messaging remain outside this release.
 
 The shipped editors, spatial planning, conditional terms, rank-v2 objective, agent registry, approval gate and recovery reports are implemented. They do not close the live integration, usability or impact gates above.

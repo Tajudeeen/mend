@@ -55,6 +55,7 @@ import {
 } from "@/components/mend/configuration";
 import SpatialCanvas from "@/components/mend/spatial-canvas";
 import Reports from "@/components/mend/reports";
+import RepairComparison from "@/components/mend/repair-comparison";
 import AgentPanel from "@/components/mend/agent-panel";
 import { sampleEvent } from "@/lib/seed";
 import { effective } from "@/lib/model";
@@ -1174,6 +1175,7 @@ export default function Workspace({
                 title="Something changed. What stays?"
                 description="Explore feasible repairs, see who benefits and choose what happens next."
               />
+              <RepairComparison doc={doc} scenario={scenario.type === "budget" ? { type: "budget", budget } : scenario} />
               <div className="repair-layout">
                 <section className="panel scenario-panel">
                   <span className="eyebrow">01 / WHAT HAPPENED?</span>

@@ -16,13 +16,13 @@ PostgreSQL transactions set a transaction-local JWT subject for RLS. The applica
 
 D1 batches a conditional event update and gated revision/audit inserts. Tests exercise actual Miniflare D1 transactions. Optional request keys persist their results with the mutation; retries return the original result for that owner. A caller must reuse a key only for the same intent. Payload fingerprints, automatic replay of simultaneous losing requests, key expiry and cross-process rate limits remain follow-up work.
 
-History endpoints return the latest 100 entries. Older rows are retained but pagination and user restoration/deletion are not implemented. Administrative access can alter records; this is not a tamper-proof ledger.
+History endpoints return the latest 100 entries. Older rows are retained. Assignment restoration is implemented as a new approval request; pagination and event deletion remain open. Administrative access can alter records; this is not a tamper-proof ledger.
 
 ## Planner
 
 Events have configurable participant pools, zones and slots. The bounded DFS explores candidate assignments and spatial allocations, checks hard constraints incrementally, and returns up to three distinct participant mixes. Configurable node limits bound work; truncation is reported. A truncated empty result is not proof of infeasibility. No unrestricted global optimality is claimed.
 
-Constraints cover budget, hours, availability, participant/slot uniqueness, locks, participant/zone type, footprint, category restrictions, capacity, simultaneous power and closures. Unknown fees/availability/confirmation remain visible and make an option conditional; live approval blocks unconfirmed terms. Declared offering substitutions use organizer inventory and allergen restrictions, not generated ingredients or safety certification. One disruption is modeled at a time.
+Constraints cover budget, hours, availability, participant/slot uniqueness, locks, participant/zone type, footprint, category restrictions, capacity, simultaneous power and closures. Unknown fees/availability/confirmation remain visible and make an option conditional; live approval blocks unconfirmed terms. Declared offering substitutions use organizer inventory and allergen restrictions, not generated ingredients or safety certification. Each proposal models one new disruption. Approved incident facts persist into later repairs; simultaneous multi-incident input remains outside this release.
 
 Raw affinities are converted to fractional midranks within each fixed cohort/domain pool. Domain means receive equal weight before weighted audience aggregation. The default rank-v2 objective is 35% relevance, 25% cohort floor, 25% continuity and 15% stability. Adjustable weights are disclosed. Continuity compares the current plan's ordinal vector to the approved reference plan. See `cultural-continuity.md` for the exact definitions. These metrics are product heuristics, not calibrated outcome probabilities.
 

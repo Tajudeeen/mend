@@ -1,0 +1,24 @@
+{
+  "event": "Qloo Agentic Hackathon",
+  "reviewedAt": "2026-10-28",
+  "sources": ["https://qloo.devpost.com/", "https://qloo.devpost.com/rules"],
+  "deadline": "2026-10-31T03:45:00Z",
+  "requirements": [
+    { "id": "qloo-agent", "requirement": "Working application integrating Qloo as an agentic tool, through an agent framework, or in an existing agent.", "implementation": ["server/agent.ts", "lib/qloo.ts", "lib/planner.ts"], "externalCheck": "Credentialed Qloo and model workflow with meaningful cultural influence." },
+    { "id": "public-demo", "requirement": "Externally hosted, fully published functional demo.", "implementation": ["app/demo/page.tsx", "app/review/page.tsx"], "externalCheck": "Anonymous end-to-end access and availability through judging." },
+    { "id": "public-source", "requirement": "Public GitHub, GitLab or Bitbucket repository with necessary code, assets and run instructions.", "implementation": ["README.md", "docs/SETUP.md", "pnpm-lock.yaml"], "externalCheck": "Check public repository and clean installation at submitted revision." },
+    { "id": "open-source-license", "requirement": "Detectable open-source license and authorized use of third-party integrations.", "implementation": ["LICENSE", "docs/FONT_LICENSE.txt", "build/sites-vite-plugin.LICENSE"], "externalCheck": "Confirm repository license detection and dependency rights." },
+    { "id": "written-description", "requirement": "Text explaining features, functionality and Qloo's role.", "implementation": ["README.md", "docs/SUBMISSION.md"], "externalCheck": "Match final submission description to demonstrated behavior." },
+    { "id": "eligibility-registration", "requirement": "Eligible entrant, registration and completed Devpost submission.", "implementation": ["docs/HOST_REQUIREMENTS.md"], "externalCheck": "Entrant eligibility, ownership, reuse conditions and submission confirmation." },
+    { "id": "testing-language", "requirement": "English materials or translation, accurate functioning claims and free judge access.", "implementation": ["docs/SUBMISSION.md", "docs/VERIFICATION.md"], "externalCheck": "Verify final materials and access through the judging period." },
+    { "id": "finalist-availability", "requirement": "Finalists available for preparation and the November 5 live appearance.", "implementation": ["docs/HOST_REQUIREMENTS.md"], "externalCheck": "Entrant availability if selected." }
+  ],
+  "rubric": [
+    { "id": "technological-implementation", "weight": 25 },
+    { "id": "design", "weight": 25 },
+    { "id": "potential-impact", "weight": 25 },
+    { "id": "quality-of-idea", "weight": 25 }
+  ],
+  "videoRequired": false,
+  "note": "Local file checks do not establish eligibility, public access, live integration or a completed submission. The existing-project clause is malformed in the official rules and needs organizer clarification if relied upon."
+}
