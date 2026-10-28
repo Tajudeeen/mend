@@ -77,6 +77,7 @@ export type Assignment = {
 export type Evidence = {
   id: string;
   provider: "qloo";
+  origin?: string;
   at: string;
   endpoint: string;
   params: Record<string, string>;

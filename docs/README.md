@@ -2,6 +2,8 @@
 
 Start with [the host requirements](HOST_REQUIREMENTS.md). The machine-readable [host manifest](host-requirements.json) is checked by `pnpm check:repo`. It preserves required deliverables and equal rubric weights; it does not certify eligibility or submission.
 
+For a real event's source, model, approval and persistence trail, follow [the evidence workflow](EVIDENCE_WORKFLOW.md). Sample interactions remain explicitly synthetic.
+
 | Question                                 | Source                                                                                      |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------- |
 | What must the submitted product satisfy? | [Host requirements](HOST_REQUIREMENTS.md) and [product specification](product-spec.md)      |

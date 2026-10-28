@@ -13,7 +13,10 @@ import Workspace from "../app/workspace";
 import VendorProfile from "../components/mend/vendor-profile";
 import Study from "../app/study/page";
 import { sampleEvent } from "../lib/seed";
-beforeEach(() => history.replaceState({}, "", "/"));
+beforeEach(() => {
+  history.replaceState({}, "", "/");
+  vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+});
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();

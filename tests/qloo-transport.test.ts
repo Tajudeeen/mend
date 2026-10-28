@@ -1,8 +1,26 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { qloo } from "../lib/qloo.ts";
+import { qloo, qlooOrigin } from "../lib/qloo.ts";
 
 const env = { QLOO_API_KEY: "synthetic-qloo-key" };
+test("Qloo normalizes an assigned origin while refusing credential-bearing or off-host URLs", async () => {
+  assert.equal(
+    qlooOrigin({ QLOO_API_BASE: " https://hackathon.api.qloo.com/ " }),
+    "https://hackathon.api.qloo.com",
+  );
+  for (const base of [
+    "https://hackathon.api.qloo.com/v2",
+    "https://hackathon.api.qloo.com/?key=secret",
+    "https://user:secret@api.qloo.com",
+    "https://api.qloo.com.evil.test",
+    "http://api.qloo.com",
+    "https://api.qloo.com/#fragment",
+  ])
+    assert.throws(
+      () => qlooOrigin({ QLOO_API_BASE: base }),
+      /Unsupported Qloo origin/,
+    );
+});
 test("Qloo stops an oversized streamed body before consuming the rest", async () => {
   const previous = globalThis.fetch;
   let cancelled = false;

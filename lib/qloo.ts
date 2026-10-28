@@ -29,6 +29,32 @@ const tagSchema = z
   .object({ tag_id: z.string(), name: z.string() })
   .passthrough();
 export type QlooEnv = { QLOO_API_KEY?: string; QLOO_API_BASE?: string };
+export function qlooOrigin(env: QlooEnv) {
+  let url: URL;
+  try {
+    url = new URL((env.QLOO_API_BASE ?? "https://api.qloo.com").trim());
+  } catch {
+    throw new Error(
+      "Unsupported Qloo origin. Supply the HTTPS origin assigned with your key.",
+    );
+  }
+  if (
+    ![
+      "https://api.qloo.com",
+      "https://staging.api.qloo.com",
+      "https://hackathon.api.qloo.com",
+    ].includes(url.origin) ||
+    url.pathname !== "/" ||
+    url.search ||
+    url.hash ||
+    url.username ||
+    url.password
+  )
+    throw new Error(
+      "Unsupported Qloo origin. Supply the assigned HTTPS origin without an API path, query or credentials.",
+    );
+  return url.origin;
+}
 async function readQlooBody(response: Response) {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("Qloo returned an empty response.");
@@ -65,15 +91,7 @@ export async function qloo(
     throw new Error(
       "Qloo API key is not configured. Demo data remains available.",
     );
-  const origin = env.QLOO_API_BASE ?? "https://api.qloo.com";
-  if (
-    ![
-      "https://api.qloo.com",
-      "https://staging.api.qloo.com",
-      "https://hackathon.api.qloo.com",
-    ].includes(origin)
-  )
-    throw new Error("Unsupported Qloo origin.");
+  const origin = qlooOrigin(env);
   const url = new URL(path, origin);
   if (url.origin !== origin || !path.startsWith("/") || path.startsWith("//"))
     throw new Error("Unsupported Qloo path.");
@@ -226,6 +244,7 @@ export async function collect(
   return {
     id: crypto.randomUUID(),
     provider: "qloo",
+    origin: qlooOrigin(env),
     at: new Date().toISOString(),
     endpoint: "/v2/insights",
     params,

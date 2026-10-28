@@ -217,15 +217,19 @@ export default function Settings() {
           {[
             [
               "Cultural intelligence",
-              health.qloo
-                ? "Qloo key configured, live verification still required"
-                : "Qloo key not configured",
+              health.qloo === undefined
+                ? "Checking…"
+                : health.qloo
+                  ? "Qloo key configured, live verification still required"
+                  : "Qloo key not configured",
             ],
             [
               "Language agent",
-              health.model
-                ? "Provider configured"
-                : "Provider credentials not configured",
+              health.model === undefined
+                ? "Checking…"
+                : health.model
+                  ? "Provider configured"
+                  : "Provider credentials not configured",
             ],
             ["Persistence", health.persistence ?? "Checking…"],
             ["Authentication", health.auth ?? "Checking…"],

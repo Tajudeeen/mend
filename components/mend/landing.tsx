@@ -175,7 +175,7 @@ export default function Landing() {
               to hold up.
             </h2>
             <Link href="/demo?view=evidence">
-              Open the evidence desk <ArrowUpRight size={17} />
+              Inspect sample evidence <ArrowUpRight size={17} />
             </Link>
           </div>
           <ol>

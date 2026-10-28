@@ -8,7 +8,7 @@ The checked manifest is [host-requirements.json](host-requirements.json). Reposi
 
 | Requirement                                                | Current evidence                                                             | Release action                                                             |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Working Qloo-integrated agentic application                | `server/agent.ts`, `lib/qloo.ts`, `lib/planner.ts`; mocked integration tests | Qloo key pending; owner reported Groq tool-call pass; demonstrate live influence        |
+| Working Qloo-integrated agentic application                | `server/agent.ts`, `lib/qloo.ts`, `lib/planner.ts`; mocked integration tests | Qloo key/origin configured; live request verification pending; owner reported Groq tool-call pass; demonstrate live influence        |
 | Externally published functional demo                       | Public sample at https://usemend.vercel.app; anonymous browser generated and approved a fictional repair                                  | Verify full live workflow and maintain access through judging |
 | Public complete source repository                          | GitHub metadata confirmed public on October 27                               | Verify final default branch and clean setup                                |
 | Detectable open-source license                             | Root MIT `LICENSE`; font and build notices retained                          | Retain third-party notices                                                 |

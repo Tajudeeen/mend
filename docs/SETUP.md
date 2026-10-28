@@ -85,7 +85,7 @@ Real credentials, Node deployment authorization/connectivity, full browser/devic
 
 ## Preparation while access is pending
 
-The owner requested Qloo access on October 28, 2026 and expects a response in about 24 hours. That expectation is not a confirmed provider service-level guarantee. No key or live response is recorded in source.
+The owner received the Qloo key on October 28, 2026. It is configured server-side with the assigned `https://hackathon.api.qloo.com` origin. The origin correction reached a ready production deployment. A successful search/insights response and complete live repair still need their own observed evidence. No key is recorded in source.
 
 The live event overview now lists six preparation checks with destinations for missing inputs: roster/slots/zones, audience seeds, participant references, comparable evidence, a valid plan and confirmed terms. It evaluates event contents only. Completing this checklist does not establish a working provider connection or a successful live repair.
 

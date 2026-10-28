@@ -8,7 +8,7 @@ import CulturalFingerprint from "@/components/mend/cultural-fingerprint";
 import VendorProfile from "@/components/mend/vendor-profile";
 import RevisionHistory from "@/components/mend/revision-history";
 import { proposeRestoration } from "@/lib/restoration";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -57,6 +57,8 @@ import SpatialCanvas from "@/components/mend/spatial-canvas";
 import Reports from "@/components/mend/reports";
 import RepairComparison from "@/components/mend/repair-comparison";
 import AgentPanel from "@/components/mend/agent-panel";
+import EvidenceLedger from "@/components/mend/evidence-ledger";
+import { inspectEventEvidence } from "@/lib/event-evidence";
 import { sampleEvent } from "@/lib/seed";
 import { effective } from "@/lib/model";
 import { metrics, validate } from "@/lib/planner";
@@ -329,53 +331,90 @@ function AudienceBars({
     </div>
   );
 }
-function DownloadButton({ doc, audit }: { doc: EventDoc; audit: Audit[] }) {
+function DownloadButton({
+  doc,
+  audit,
+  demo,
+  readbackAt,
+}: {
+  doc: EventDoc;
+  audit: Audit[];
+  demo: boolean;
+  readbackAt?: string;
+}) {
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   return (
-    <button
-      className="btn quiet"
-      onClick={async () => {
-        let revisions: EventDoc[] = [];
-        if (doc.revision >= 0) {
+    <div>
+      <button
+        className="btn quiet"
+        disabled={exporting}
+        onClick={async () => {
+          setExporting(true);
+          setExportError("");
           try {
-            const response = await fetch(
-              "/api/mend?id=" + doc.id + "&history=1",
-            );
-            if (response.ok) {
-              const history = (await response.json()) as {
-                revisions: EventDoc[];
-              };
-              revisions = history.revisions ?? [];
+            let revisions: EventDoc[] = [];
+            let historyStatus = demo ? "not-applicable-sample" : "unavailable";
+            if (!demo) {
+              try {
+                const response = await fetch(
+                  "/api/mend?id=" + doc.id + "&history=1",
+                );
+                if (response.ok) {
+                  const history = (await response.json()) as {
+                    revisions: EventDoc[];
+                  };
+                  revisions = history.revisions ?? [];
+                  historyStatus = "retrieved";
+                }
+              } catch {}
             }
-          } catch {}
-        }
-        const blob = new Blob(
-          [
-            JSON.stringify(
-              {
-                format: "mend-evidence-bundle-v1",
-                revisions,
-                exportedAt: new Date().toISOString(),
-                event: doc,
-                audit,
-                disclosure:
-                  "Demo scores are synthetic. Qloo scores are query-relative, not outcome predictions. Audit history is application-level, not independently immutable.",
-              },
-              null,
-              2,
-            ),
-          ],
-          { type: "application/json" },
-        );
-        const url = URL.createObjectURL(blob),
-          a = document.createElement("a");
-        a.href = url;
-        a.download = "mend-" + doc.id + ".json";
-        a.click();
-        URL.revokeObjectURL(url);
-      }}
-    >
-      <Download size={15} /> Export evidence
-    </button>
+            const blob = new Blob(
+              [
+                JSON.stringify(
+                  {
+                    format: "mend-evidence-bundle-v1",
+                    revisions,
+                    exportedAt: new Date().toISOString(),
+                    event: doc,
+                    audit,
+                    persistence: {
+                      session: demo
+                        ? "temporary-sample"
+                        : "authenticated-event",
+                      readbackAt: readbackAt ?? null,
+                      historyStatus,
+                    },
+                    verification: await inspectEventEvidence(doc),
+                    disclosure:
+                      "Demo scores are synthetic. Qloo scores are query-relative, not outcome predictions. Audit history is application-level, not independently immutable.",
+                  },
+                  null,
+                  2,
+                ),
+              ],
+              { type: "application/json" },
+            );
+            const url = URL.createObjectURL(blob),
+              a = document.createElement("a");
+            a.href = url;
+            a.download = "mend-" + doc.id + ".json";
+            a.click();
+            URL.revokeObjectURL(url);
+          } catch {
+            setExportError(
+              "Could not export this evidence snapshot. Reload and try again.",
+            );
+          } finally {
+            setExporting(false);
+          }
+        }}
+      >
+        <Download size={15} />{" "}
+        {exporting ? "Preparing export…" : "Export evidence"}
+      </button>
+      {exportError && <p role="alert">{exportError}</p>}
+    </div>
   );
 }
 export default function Workspace({
@@ -387,12 +426,28 @@ export default function Workspace({
   eventId?: string;
   initialView?: string;
 }) {
+  const navigationFrame = useRef<number | null>(null);
+  const loadRequest = useRef(0);
+  useEffect(
+    () => () => {
+      if (navigationFrame.current !== null)
+        window.cancelAnimationFrame(navigationFrame.current);
+      loadRequest.current++;
+    },
+    [],
+  );
   const [doc, setDoc] = useState<EventDoc>(() =>
       sampleEvent("00000000-0000-4000-8000-000000000001"),
     ),
     [audit, setAudit] = useState<Audit[]>([]),
     [historyDocs, setHistoryDocs] = useState<EventDoc[]>([]),
     [persisted, setPersisted] = useState(demo),
+    [loadState, setLoadState] = useState<
+      "loading" | "ready" | "error" | "empty"
+    >(demo ? "ready" : "loading"),
+    [readback, setReadback] = useState<{ revision: number; at: string } | null>(
+      null,
+    ),
     [view, setView] = useState(initialView),
     [busy, setBusy] = useState(""),
     [notice, setNotice] = useState(""),
@@ -410,6 +465,17 @@ export default function Workspace({
     } | null>(null);
   const closeEditor = useCallback(() => setEditor(null), []);
   const closeResolver = useCallback(() => setResolver(null), []);
+  useEffect(() => {
+    if (!mobile) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobile(false);
+        document.querySelector<HTMLButtonElement>(".mobile-toggle")?.focus();
+      }
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [mobile]);
   const [scenario, setScenario] = useState<Scenario>({
       type: "cancellation",
       candidateId: "a1",
@@ -420,33 +486,78 @@ export default function Workspace({
       { id: string; name: string; description?: string }[]
     >([]);
   function navigate(id: string) {
+    if (!views.some((v) => v.id === id)) return;
     setView(id);
     setMobile(false);
     const u = new URL(location.href);
     u.searchParams.set("view", id);
     history.pushState({}, "", u);
+    if (navigationFrame.current !== null)
+      window.cancelAnimationFrame(navigationFrame.current);
+    navigationFrame.current = window.requestAnimationFrame(() => {
+      document
+        .getElementById("workspace-content")
+        ?.focus({ preventScroll: true });
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)")
+          .matches
+          ? "instant"
+          : "smooth",
+      });
+    });
   }
   const load = useCallback(async function load(id: string) {
+    const requestNumber = ++loadRequest.current;
     setBusy("load");
+    setLoadState("loading");
     setError("");
     try {
       const r = await fetch("/api/mend?id=" + id),
         data = (await r.json()) as ApiResponse;
+      if (requestNumber !== loadRequest.current) return;
       if (!r.ok) throw new Error(data.error ?? "Request failed");
+      if (!data.event || data.event.id !== id)
+        throw new Error(
+          "The server did not return this event. No sample has been substituted.",
+        );
       setDoc(data.event!);
+      setScenario((previous) =>
+        previous.type !== "cancellation" ||
+        data.event!.candidates.some((c) => c.id === previous.candidateId)
+          ? previous
+          : data.event!.candidates.length
+            ? {
+                type: "cancellation",
+                candidateId:
+                  data.event!.plan[0]?.candidateId ??
+                  data.event!.candidates[0].id,
+              }
+            : { type: "none" },
+      );
+      setBudget(data.event.brief.budget);
       setAudit(data.audit);
       setConfigured(data.qlooConfigured);
       setPersisted(true);
+      setLoadState("ready");
+      setReadback({
+        revision: data.event.revision,
+        at: new Date().toISOString(),
+      });
       const u = new URL(location.href);
       u.searchParams.set("event", id);
       history.replaceState({}, "", u);
     } catch (e) {
+      if (requestNumber !== loadRequest.current) return;
       setError((e as Error).message);
+      setLoadState("error");
+      setPersisted(false);
     } finally {
-      setBusy("");
+      if (requestNumber === loadRequest.current) setBusy("");
     }
   }, []);
   useEffect(() => {
+    let active = true;
     const u = new URL(location.href);
     const v = u.searchParams.get("view");
     if (views.some((x) => x.id === v)) setView(v!);
@@ -461,28 +572,55 @@ export default function Workspace({
         setScenario({ type: "cancellation", candidateId: "a1" });
     }
     function pop() {
-      setView(new URL(location.href).searchParams.get("view") ?? "overview");
+      const next = new URL(location.href).searchParams.get("view");
+      setView(views.some((v) => v.id === next) ? next! : "overview");
+      setMobile(false);
+      if (navigationFrame.current !== null)
+        window.cancelAnimationFrame(navigationFrame.current);
+      navigationFrame.current = window.requestAnimationFrame(() =>
+        document
+          .getElementById("workspace-content")
+          ?.focus({ preventScroll: true }),
+      );
     }
     window.addEventListener("popstate", pop);
     if (!demo)
       fetch("/api/mend")
         .then(async (r) => {
           const data = (await r.json()) as ApiResponse;
-          if (r.ok) {
+          if (!active) return;
+          if (!r.ok)
+            throw new Error(data.error ?? "Could not load your saved events.");
+          {
             setEvents(data.events);
             setConfigured(data.qlooConfigured);
             const id =
               eventId ?? u.searchParams.get("event") ?? data.events[0]?.id;
             if (id) await load(id);
+            else setLoadState("empty");
           }
         })
-        .catch(() =>
-          setError("Could not reach the server. The unsaved demo is visible."),
-        );
-    return () => window.removeEventListener("popstate", pop);
+        .catch((error) => {
+          if (!active) return;
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Could not reach the server.",
+          );
+          setLoadState("error");
+        });
+    return () => {
+      active = false;
+      loadRequest.current++;
+      window.removeEventListener("popstate", pop);
+    };
   }, [demo, eventId, load]);
   async function action(action: string, extra: Record<string, unknown> = {}) {
     if (busy) return;
+    if (!demo && !persisted) {
+      setError("Load a saved event before making changes.");
+      return null;
+    }
     setBusy(action);
     setError("");
     setNotice("");
@@ -542,9 +680,11 @@ export default function Workspace({
           },
           ...a,
         ]);
-        setNotice(action === "approve"
-          ? "Sample repair applied. Your decision report is ready."
-          : result.detail);
+        setNotice(
+          action === "approve"
+            ? "Sample repair applied. Your decision report is ready."
+            : result.detail,
+        );
         return { event: result.event } as ApiResponse;
       }
       const r = await fetch("/api/mend", {
@@ -589,6 +729,54 @@ export default function Workspace({
       setBusy("");
     }
   }
+  if (!demo && loadState !== "ready")
+    return (
+      <main
+        className="simple-page workspace-load-state"
+        aria-busy={loadState === "loading"}
+      >
+        <nav>
+          <Link href="/" className="landing-brand" aria-label="MEND home">
+            <MendMark />
+          </Link>
+          <Link href="/events">My events</Link>
+        </nav>
+        <section className="panel config-panel">
+          <div className="eyebrow">YOUR SAVED EVENT</div>
+          <h1>
+            {loadState === "loading"
+              ? "Loading your event…"
+              : loadState === "empty"
+                ? "Create your first event."
+                : "Your event could not be loaded."}
+          </h1>
+          {loadState === "error" && <p role="alert">{error}</p>}
+          <p>
+            {loadState === "loading"
+              ? "Waiting for the authenticated server record."
+              : "Saved events and the fictional sample have separate workspaces."}
+          </p>
+          <div className="evidence-actions">
+            {loadState === "error" && eventId && (
+              <button className="btn" onClick={() => load(eventId)}>
+                Retry loading event
+              </button>
+            )}
+            {loadState !== "loading" && (
+              <>
+                <Link className="btn quiet" href="/settings">
+                  Account & connections
+                </Link>
+                <Link className="btn" href="/events/new">
+                  Create an event
+                </Link>
+                <Link href="/demo">Open the fictional sample</Link>
+              </>
+            )}
+          </div>
+        </section>
+      </main>
+    );
   const m = metrics(doc, doc.plan),
     violations = validate(doc, doc.plan),
     rules = effective(doc, doc.scenario),
@@ -605,7 +793,20 @@ export default function Workspace({
     });
   return (
     <div className="shell">
-      <aside className={"sidebar " + (mobile ? "open" : "")}>
+      <a className="workspace-skip" href="#workspace-content">
+        Skip to workspace content
+      </a>
+      {mobile && (
+        <button
+          className="workspace-nav-backdrop"
+          aria-label="Close workspace navigation"
+          onClick={() => setMobile(false)}
+        />
+      )}
+      <aside
+        id="workspace-navigation"
+        className={"sidebar " + (mobile ? "open" : "")}
+      >
         <Link href="/" className="brand" aria-label="MEND home">
           <MendMark />
         </Link>
@@ -641,14 +842,20 @@ export default function Workspace({
                   {e.name}
                 </button>
               ))}
-              <button
-                onClick={() => {
-                  action("create");
-                  setMenu(false);
-                }}
-              >
-                <Plus size={14} /> New demo event
-              </button>
+              {demo ? (
+                <button
+                  onClick={() => {
+                    action("create");
+                    setMenu(false);
+                  }}
+                >
+                  <Plus size={14} /> New demo event
+                </button>
+              ) : (
+                <Link className="event-create-link" href="/events/new">
+                  <Plus size={14} /> Create an event
+                </Link>
+              )}
             </div>
           )}
         </div>
@@ -657,6 +864,7 @@ export default function Workspace({
             <button
               key={v.id}
               className={view === v.id ? "active" : ""}
+              aria-current={view === v.id ? "page" : undefined}
               onClick={() => navigate(v.id)}
             >
               <v.icon size={18} />
@@ -690,6 +898,8 @@ export default function Workspace({
             <button
               className="mobile-toggle"
               aria-label="Open navigation"
+              aria-controls="workspace-navigation"
+              aria-expanded={mobile}
               onClick={() => setMobile(!mobile)}
             >
               <Menu size={21} />
@@ -703,7 +913,7 @@ export default function Workspace({
               className={"mode-pill " + (doc.mode === "live" ? "live" : "")}
             >
               <i />
-              {doc.mode === "demo" ? "Demo workspace" : "Live evidence mode"}
+              {doc.mode === "demo" ? "Synthetic sample" : "Live event"}
             </span>
             <Link
               href="/settings"
@@ -714,7 +924,11 @@ export default function Workspace({
             </Link>
           </div>
         </header>
-        <main>
+        <main
+          id="workspace-content"
+          tabIndex={-1}
+          aria-label={views.find((v) => v.id === view)?.name}
+        >
           <div className="statusline">
             <span>
               <i className="dot green" />
@@ -727,7 +941,7 @@ export default function Workspace({
             <span>
               {doc.mode === "demo"
                 ? "Fictional participants and sample affinities"
-                : "Qloo affinities · booking facts supplied by organizer"}
+                : `${doc.evidence.length} stored Qloo batches · booking facts supplied by organizer`}
             </span>
           </div>
           {error && (
@@ -1449,22 +1663,46 @@ export default function Workspace({
                         </span>
                       </div>
                       {p.status === "approved" && (
-                        <section className="info-note" aria-label="Repair applied">
+                        <section
+                          className="info-note"
+                          aria-label="Repair applied"
+                        >
                           <h3>Your repair is applied.</h3>
-                          <p>Review the original plan, approved changes, checks and evidence in the decision report.</p>
-                          <button className="btn small" onClick={() => navigate("reports")}>View approved report <ArrowRight size={14} /></button>
+                          <p>
+                            Review the original plan, approved changes, checks
+                            and evidence in the decision report.
+                          </p>
+                          <button
+                            className="btn small"
+                            onClick={() => navigate("reports")}
+                          >
+                            View approved report <ArrowRight size={14} />
+                          </button>
                         </section>
                       )}
                       {p.truncated && (
-                        <p className="info-note" role="status">Search limit reached. These are the best returned options, not proven global optima. No option found is not proof that a repair is impossible.</p>
+                        <p className="info-note" role="status">
+                          Search limit reached. These are the best returned
+                          options, not proven global optima. No option found is
+                          not proof that a repair is impossible.
+                        </p>
                       )}
                       {!p.options.length && (
                         <div className="alert error" role="alert">
                           <AlertCircle size={18} />
                           <div>
-                            <p>No repair returned. The active plan is unchanged.</p>
-                            <ul>{(p.reasons ?? []).map((reason, index) => <li key={index}>{reason}</li>)}</ul>
-                            <p>Review the stated conflict, missing inputs or search limit before trying again.</p>
+                            <p>
+                              No repair returned. The active plan is unchanged.
+                            </p>
+                            <ul>
+                              {(p.reasons ?? []).map((reason, index) => (
+                                <li key={index}>{reason}</li>
+                              ))}
+                            </ul>
+                            <p>
+                              Review the stated conflict, missing inputs or
+                              search limit before trying again.
+                            </p>
                           </div>
                         </div>
                       )}
@@ -1662,7 +1900,9 @@ export default function Workspace({
                   )}
                   {p && (
                     <details className="trace">
-                      <summary>Inspect cultural coverage <ChevronDown size={14} /></summary>
+                      <summary>
+                        Inspect cultural coverage <ChevronDown size={14} />
+                      </summary>
                       <CulturalFingerprint doc={doc} />
                     </details>
                   )}
@@ -1676,7 +1916,14 @@ export default function Workspace({
                   />
                 </section>
               </div>
-              <RepairComparison doc={doc} scenario={scenario.type === "budget" ? { type: "budget", budget } : scenario} />
+              <RepairComparison
+                doc={doc}
+                scenario={
+                  scenario.type === "budget"
+                    ? { type: "budget", budget }
+                    : scenario
+                }
+              />
             </>
           )}
           {view === "reports" && <Reports doc={doc} />}
@@ -1699,8 +1946,27 @@ export default function Workspace({
               />
               <div className="section-tools">
                 <span>Evidence belongs to this event and its revisions.</span>
-                <DownloadButton doc={doc} audit={audit} />
+                <DownloadButton
+                  doc={doc}
+                  audit={audit}
+                  demo={demo}
+                  readbackAt={
+                    readback?.revision === doc.revision
+                      ? readback.at
+                      : undefined
+                  }
+                />
               </div>
+              <EvidenceLedger
+                doc={doc}
+                audit={audit}
+                demo={demo}
+                readbackAt={
+                  readback?.revision === doc.revision ? readback.at : undefined
+                }
+                reload={() => load(doc.id)}
+                busy={!!busy}
+              />
               <CulturalFingerprint doc={doc} />
               <div className="evidence-grid">
                 <section className="panel integration-panel">
@@ -1719,14 +1985,14 @@ export default function Workspace({
                   <div className="mode-switch">
                     <button
                       className={doc.mode === "demo" ? "selected" : ""}
-                      disabled={!!busy || !persisted}
+                      disabled={demo || !!busy || !persisted}
                       onClick={() => action("mode", { mode: "demo" })}
                     >
                       Sample data
                     </button>
                     <button
                       className={doc.mode === "live" ? "selected" : ""}
-                      disabled={!!busy || !persisted}
+                      disabled={demo || !!busy || !persisted}
                       onClick={() => action("mode", { mode: "live" })}
                     >
                       Live Qloo
@@ -1735,7 +2001,7 @@ export default function Workspace({
                   <div className="info-note">
                     {configured
                       ? "Resolve the roster and audience seeds, then fetch each audience/domain batch."
-                      : "The live integration needs a server-side QLOO_API_KEY. No Qloo calls or real-world impact have been verified yet."}
+                      : "The live integration needs a server-side QLOO_API_KEY. Configure it in account settings; this event still needs its own evidence batches."}
                   </div>
                   <h4>Evidence batches</h4>
                   {doc.brief.cohorts.map((co) => (
@@ -1777,66 +2043,14 @@ export default function Workspace({
                     attendance, cultural identity or guaranteed demand.
                   </p>
                 </section>
-                <section className="panel integration-panel">
-                  <span className="eyebrow">WHAT WE CAN PROVE TODAY</span>
-                  <h3>Built with the limits visible.</h3>
-                  <ul className="proof-list">
-                    <li>
-                      <CheckCircle2 size={17} />
-                      <span>
-                        Constraint-aware planning
-                        <small>
-                          Budget, availability, zone type, power and capacity.
-                        </small>
-                      </span>
-                    </li>
-                    <li>
-                      <CheckCircle2 size={17} />
-                      <span>
-                        Human approval before change
-                        <small>
-                          Proposals never replace the active plan automatically.
-                        </small>
-                      </span>
-                    </li>
-                    <li>
-                      <CheckCircle2 size={17} />
-                      <span>
-                        Server-persisted decisions
-                        <small>
-                          Per-user records, revision checks and an audit trail.
-                        </small>
-                      </span>
-                    </li>
-                    <li>
-                      <Clock size={17} />
-                      <span>
-                        Live cultural validation
-                        <small>
-                          {doc.evidence.length
-                            ? doc.evidence.length + " Qloo batches saved."
-                            : "Waiting for Qloo credentials and live API verification."}
-                        </small>
-                      </span>
-                    </li>
-                    <li>
-                      <Clock size={17} />
-                      <span>
-                        Real-world impact
-                        <small>
-                          No organizer study or measured attendance claim yet.
-                        </small>
-                      </span>
-                    </li>
-                  </ul>
-                </section>
+                <ReadinessPanel doc={doc} navigate={navigate} />
               </div>
               {doc.evidence.map((e) => (
                 <details className="receipt" key={e.id}>
                   <summary>
                     <ShieldCheck size={17} />
                     <span>
-                      Qloo receipt · {e.kind} ·{" "}
+                      Stored Qloo response · {e.kind} ·{" "}
                       {doc.brief.cohorts.find((c) => c.id === e.cohortId)?.name}
                       <small>{new Date(e.at).toLocaleString()}</small>
                     </span>
@@ -1847,12 +2061,16 @@ export default function Workspace({
               ))}
               <section className="panel audit-panel">
                 <div className="panel-head">
-                  <h3>The decision trail</h3>
+                  <h3>
+                    {demo ? "Sample interaction trail" : "The decision trail"}
+                  </h3>
                   <span>{audit.length} entries</span>
                 </div>
                 {!audit.length ? (
                   <div className="audit-empty">
-                    Save a workspace to begin recording decisions.
+                    {demo
+                      ? "Sample actions appear here for this temporary session."
+                      : "No application audit entries were returned for this event."}
                   </div>
                 ) : (
                   audit.map((a) => (
