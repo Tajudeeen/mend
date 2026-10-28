@@ -78,6 +78,9 @@ export default function EvidenceLedger({
             {runs.length
               ? `${runs.length} stored runs · latest: ${runs.at(-1)!.state.replaceAll("_", " ")}`
               : "No model run recorded for this event"}
+            {runs.at(-1)?.configuration && (
+              <small> · {runs.at(-1)!.configuration!.model}</small>
+            )}
           </dd>
         </div>
         <div>

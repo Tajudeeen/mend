@@ -18,6 +18,8 @@ export default function Settings() {
       qloo: ConnectionResult;
       model: ConnectionResult;
     } | null>(null);
+  const [models, setModels] = useState<string[] | null>(null);
+  const [listingModels, setListingModels] = useState(false);
   useEffect(() => {
     const confirmationFailed =
       new URLSearchParams(window.location.search).get("auth") === "failed";
@@ -105,6 +107,7 @@ export default function Settings() {
                     setSignedIn(false);
                     setPassword("");
                     setChecks(null);
+                    setModels(null);
                     setMessage("You have signed out of this browser.");
                   } catch (error) {
                     setMessage((error as Error).message);
@@ -243,6 +246,49 @@ export default function Settings() {
             A configured connection isn&apos;t proof of a successful live call.
             Receipts and verified runs appear in the event’s evidence view.
           </p>
+          <button
+            className="btn quiet"
+            disabled={!signedIn || listingModels}
+            onClick={async () => {
+              setListingModels(true);
+              setMessage("");
+              setModels(null);
+              try {
+                const response = await fetch("/api/connections");
+                const data = (await response.json()) as {
+                  models?: string[];
+                  error?: string;
+                };
+                if (!response.ok || !data.models)
+                  throw new Error(data.error ?? "Could not list models.");
+                setModels(data.models);
+              } catch (error) {
+                setMessage((error as Error).message);
+              } finally {
+                setListingModels(false);
+              }
+            }}
+          >
+            {listingModels
+              ? "Loading provider models…"
+              : "Show available models"}
+          </button>
+          {models && signedIn && (
+            <details open className="config-details">
+              <summary>
+                {models.length} models returned by the configured provider
+              </summary>
+              <ul>
+                {models.map((model) => (
+                  <li key={model}>{model}</li>
+                ))}
+              </ul>
+              <p className="fineprint">
+                Listing does not establish tool support or account quota. Set
+                the chosen LLM_MODEL on the server, redeploy and test it.
+              </p>
+            </details>
+          )}
           <button
             className="btn"
             disabled={checking || !signedIn}

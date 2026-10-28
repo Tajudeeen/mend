@@ -262,6 +262,13 @@ export type AgentStep = {
 };
 export type AgentRun = {
   id: string;
+  configuration?: {
+    providerOrigin: string;
+    model: string;
+    sourceCommit?: string;
+    maxSteps: number;
+    maxToolCalls: number;
+  };
   state:
     | "validating"
     | "investigating"

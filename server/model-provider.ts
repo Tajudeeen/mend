@@ -76,3 +76,64 @@ export function modelCallOptions(env: RuntimeEnv) {
       }
     : {};
 }
+
+export async function availableModels(env: RuntimeEnv) {
+  configuredModel(env); // Apply the same HTTPS and provider/key checks.
+  const base = env.LLM_BASE_URL!.replace(/\/$/, "");
+  const response = await fetch(`${base}/models`, {
+    headers: {
+      Authorization: `Bearer ${env.LLM_API_KEY!.trim()}`,
+      Accept: "application/json",
+    },
+    redirect: "error",
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!response.ok)
+    throw new Error(
+      `Model catalogue request failed (HTTP ${response.status}).`,
+    );
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("The model catalogue was empty.");
+  let size = 0,
+    text = "";
+  const decoder = new TextDecoder();
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 128000)
+        throw new Error("The model catalogue exceeded its size limit.");
+      text += decoder.decode(value, { stream: true });
+    }
+    text += decoder.decode();
+  } finally {
+    await reader.cancel();
+    reader.releaseLock();
+  }
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error("The provider returned an invalid model catalogue.");
+  }
+  const entries =
+    data && typeof data === "object" && "data" in data
+      ? (data as { data: unknown }).data
+      : undefined;
+  if (!Array.isArray(entries))
+    throw new Error("The provider returned an unsupported model catalogue.");
+  return [
+    ...new Set(
+      entries
+        .slice(0, 500)
+        .flatMap((entry) =>
+          typeof entry?.id === "string" &&
+          /^[a-z0-9][a-z0-9._:/-]{0,159}$/i.test(entry.id) &&
+          !/^(sk-|gsk_)/.test(entry.id)
+            ? [entry.id]
+            : [],
+        ),
+    ),
+  ].sort() as string[];
+}

@@ -97,6 +97,11 @@ export default function AgentPanel({
           <summary>
             Run {run.id.slice(0, 8)} · {run.state.replaceAll("_", " ")}
           </summary>
+          <p className="fineprint">
+            {run.configuration
+              ? `${run.configuration.model} · ${run.configuration.providerOrigin} · ${run.configuration.maxSteps} steps / ${run.configuration.maxToolCalls} tool calls maximum${run.configuration.sourceCommit ? ` · source ${run.configuration.sourceCommit.slice(0, 12)}` : ""}`
+              : "Model identity was not recorded for this older run."}
+          </p>
           {run.steps.map((s, i) => (
             <div key={s.id}>
               <span>{i + 1}</span>

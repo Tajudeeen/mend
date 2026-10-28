@@ -143,6 +143,13 @@ test.each([
     );
     expect(out.run.error).toBeUndefined();
     expect(out.run.state).toBe("awaiting_approval");
+    expect(out.run.configuration).toMatchObject({
+      providerOrigin: new URL(config.LLM_BASE_URL).origin,
+      model: config.LLM_MODEL,
+      maxSteps: 8,
+      maxToolCalls: 16,
+    });
+    expect(JSON.stringify(out.run)).not.toContain(config.LLM_API_KEY);
     expect(out.run.steps.map((s) => s.tool)).toEqual(calls.map((c) => c[0]));
     expect(out.event.plan).toEqual(original);
     expect(out.event.proposal?.status).toBe("pending");

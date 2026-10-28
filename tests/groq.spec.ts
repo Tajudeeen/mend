@@ -1,6 +1,10 @@
 import { test, expect, vi, afterEach } from "vitest";
 import { checkConnections } from "../server/connections";
-import { configuredModel, modelCallOptions } from "../server/model-provider";
+import {
+  configuredModel,
+  modelCallOptions,
+  availableModels,
+} from "../server/model-provider";
 import { investigate } from "../server/agent";
 import { sampleEvent } from "../lib/seed";
 import { newEvent } from "../lib/new-event";
@@ -10,6 +14,45 @@ const env = {
   LLM_MODEL: "openai/gpt-oss-20b",
 };
 afterEach(() => vi.unstubAllGlobals());
+test("model catalogue uses only the configured provider and returns safe unique IDs", async () => {
+  const fetcher = vi.fn(async (url, options) => {
+    expect(String(url)).toBe("https://api.groq.com/openai/v1/models");
+    expect(options.redirect).toBe("error");
+    return Response.json({
+      data: [
+        { id: "model-a" },
+        { id: "model-a" },
+        { id: "model-b" },
+        { id: "sk-private-echo" },
+        { id: "<bad>" },
+      ],
+    });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  expect(await availableModels(env)).toEqual(["model-a", "model-b"]);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+test("model catalogue rejects oversized responses and cancels downloading", async () => {
+  let cancelled = false;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async () =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array(128001));
+            },
+            cancel() {
+              cancelled = true;
+            },
+          }),
+        ),
+    ),
+  );
+  await expect(availableModels(env)).rejects.toThrow("size limit");
+  expect(cancelled).toBe(true);
+});
 test("Groq reads an incomplete event before submitting a typed missing-information report", async () => {
   const names = [
     "get_event_plan",

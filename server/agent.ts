@@ -32,6 +32,16 @@ export async function investigate(
   // A previous proposal must never be presented as the outcome of this run.
   const doc: EventDoc = { ...structuredClone(before), proposal: undefined };
   const run = newRun(instruction);
+  const sourceCommit = process.env.VERCEL_GIT_COMMIT_SHA;
+  run.configuration = {
+    providerOrigin: new URL(env.LLM_BASE_URL!).origin,
+    model: env.LLM_MODEL!,
+    ...(sourceCommit && /^[a-f0-9]{40}$/.test(sourceCommit)
+      ? { sourceCommit }
+      : {}),
+    maxSteps: 8,
+    maxToolCalls: 16,
+  };
   const validatedOptions = new Set<string>();
   const evaluatedOptions = new Set<string>();
   let approvalPrepared = false;
