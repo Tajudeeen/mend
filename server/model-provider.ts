@@ -27,7 +27,27 @@ export function configuredModel(env: RuntimeEnv) {
     name: "mend-configured-provider",
     baseURL: base.toString().replace(/\/$/, ""),
     apiKey,
-    fetch: (url, options) => fetch(url, { ...options, redirect: "error" }),
+    fetch: (url, options) => {
+      let body = options?.body;
+      // The compatible SDK replays reasoning as reasoning_content. Groq uses
+      // a different response field and rejects this assistant-message field.
+      // Preserve the actual content, tool calls and tool results unchanged.
+      if (base.hostname === "api.groq.com" && typeof body === "string") {
+        const request = JSON.parse(body);
+        if (Array.isArray(request.messages)) {
+          request.messages = request.messages.map(
+            (message: Record<string, unknown>) => {
+              if (message.role !== "assistant") return message;
+              const cleaned = { ...message };
+              delete cleaned.reasoning_content;
+              return cleaned;
+            },
+          );
+          body = JSON.stringify(request);
+        }
+      }
+      return fetch(url, { ...options, body, redirect: "error" });
+    },
   }).chatModel(env.LLM_MODEL);
 }
 
@@ -50,6 +70,7 @@ export function modelCallOptions(env: RuntimeEnv) {
           mendConfiguredProvider: {
             reasoningEffort: "low",
             parallel_tool_calls: false,
+            include_reasoning: false,
           },
         },
       }

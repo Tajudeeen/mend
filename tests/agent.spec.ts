@@ -8,7 +8,11 @@ const env = {
   LLM_MODEL: "contract-model",
 };
 afterEach(() => vi.unstubAllGlobals());
-const response = (content: string | null, calls?: unknown[]) =>
+const response = (
+  content: string | null,
+  calls?: unknown[],
+  reasoning?: string,
+) =>
   Response.json({
     id: "contract-completion",
     object: "chat.completion",
@@ -17,7 +21,12 @@ const response = (content: string | null, calls?: unknown[]) =>
     choices: [
       {
         index: 0,
-        message: { role: "assistant", content, tool_calls: calls },
+        message: {
+          role: "assistant",
+          content,
+          tool_calls: calls,
+          ...(reasoning ? { reasoning } : {}),
+        },
         finish_reason: calls ? "tool_calls" : "stop",
       },
     ],
@@ -67,16 +76,29 @@ test.each([
           const body = JSON.parse(options.body);
           expect(body.reasoning_effort).toBe("low");
           expect(body.parallel_tool_calls).toBe(false);
+          expect(body.include_reasoning).toBe(false);
+          expect(
+            body.messages.every(
+              (message: Record<string, unknown>) =>
+                !Object.hasOwn(message, "reasoning_content"),
+            ),
+          ).toBe(true);
         }
         if (i < calls.length) {
           const [name, args] = calls[i++];
-          return response(null, [
-            {
-              id: "call-" + i,
-              type: "function",
-              function: { name, arguments: JSON.stringify(args) },
-            },
-          ]);
+          return response(
+            null,
+            [
+              {
+                id: "call-" + i,
+                type: "function",
+                function: { name, arguments: JSON.stringify(args) },
+              },
+            ],
+            label === "Groq GPT-OSS"
+              ? "fixture reasoning that must not be replayed"
+              : undefined,
+          );
         }
         return response(
           JSON.stringify({

@@ -70,6 +70,7 @@ test("Groq probe sends sequential low-effort tools with a bounded reasoning budg
     expect(body.model).toBe(env.LLM_MODEL);
     expect(body.reasoning_effort).toBe("low");
     expect(body.parallel_tool_calls).toBe(false);
+    expect(body.include_reasoning).toBe(false);
     expect(body.max_tokens).toBe(1024);
     const nonce = JSON.stringify(body.messages).match(
       /[0-9a-f]{8}-[0-9a-f-]{27}/,
