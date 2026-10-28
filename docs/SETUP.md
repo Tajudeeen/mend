@@ -35,6 +35,7 @@ Get its URL and publishable key through the project Connect dialog. Configure:
 | `NEXT_PUBLIC_SUPABASE_URL`             | `https://qentnogldttrhmobgpzk.supabase.co`                                 |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Project publishable key used for Auth                                      |
 | `DATABASE_URL`                         | Reachable TLS database URL for the limited `mend_runtime` application role |
+| `DATABASE_CA_CERT`                     | Provider root CA PEM from Supabase Database Settings when required |
 | `DIRECT_URL`                           | Privileged migration URL, only in the migration environment                |
 
 Get database endpoint/connection details from Supabase Connect. Use the limited runtime login, not an admin or RLS-bypass role. The previous direct connection failed DNS resolution; verify the chosen endpoint from the application host. Migration baselining remains pending. Follow `docs/DEPLOYMENT.md` before any Prisma migration deployment against this existing database.
@@ -73,3 +74,5 @@ The owner requested Qloo access on October 28, 2026 and expects a response in ab
 The live event overview now lists six preparation checks with destinations for missing inputs: roster/slots/zones, audience seeds, participant references, comparable evidence, a valid plan and confirmed terms. It evaluates event contents only. Completing this checklist does not establish a working provider connection or a successful live repair.
 
 A report can be checked locally in the browser at `/verify`. The file is not uploaded. Its checker is shared with the CLI, rejects missing/duplicate/unreferenced receipts and modified raw responses, and treats an empty receipt list as no evidence. Passing hashes do not authenticate Qloo or verify derived ranks.
+
+Database connections always verify TLS certificates and hostnames. When the host does not trust the Supabase certificate chain, set `DATABASE_CA_CERT` to the certificate offered in Supabase Database Settings. Do not disable certificate verification. The deployed database probe is `/api/health?probe=database`; event writes and ownership isolation still require separate verification.

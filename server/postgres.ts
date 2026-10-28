@@ -1,6 +1,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type Prisma } from "@/generated/prisma/client";
 import type { EventDoc } from "@/lib/model";
+import { databaseConfig } from "@/server/database-config";
 let singleton: PrismaClient | undefined;
 function db() {
   if (!process.env.DATABASE_URL)
@@ -8,11 +9,9 @@ function db() {
       "PostgreSQL is not configured. Use the public demo until Supabase is connected.",
     );
   return (singleton ??= new PrismaClient({
-    adapter: new PrismaPg({
-      connectionString: process.env.DATABASE_URL,
-      max: 3,
-      connectionTimeoutMillis: 5000,
-    }),
+    adapter: new PrismaPg(
+      databaseConfig(process.env.DATABASE_URL, process.env.DATABASE_CA_CERT),
+    ),
   }));
 }
 // Readiness probes expose only a bounded status, never a connection URL or raw error.
