@@ -9,12 +9,16 @@ const env = {
   LLM_MODEL: "openai/gpt-oss-20b",
 };
 afterEach(() => vi.unstubAllGlobals());
-test("Groq agent JSON mode includes explicit JSON instructions and preserves the active plan", async () => {
+test("Groq agent avoids native response formatting during tools and validates final JSON without changing the plan", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (_url, options) => {
       const body = JSON.parse(String(options.body));
-      expect(body.response_format).toEqual({ type: "json_object" });
+      expect(body.response_format).toBeUndefined();
+      for (const entry of body.tools)
+        expect(entry.function.parameters.type, entry.function.name).toBe(
+          "object",
+        );
       expect(
         body.messages.some(
           (m: { content?: string }) =>

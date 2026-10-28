@@ -54,7 +54,7 @@ test.each([
       ["get_event_constraints", {}],
       [
         "generate_feasible_allocations",
-        { type: "cancellation", candidateId: "a1" },
+        { scenario: { type: "cancellation", candidateId: "a1" } },
       ],
       ["validate_hard_constraints", { optionId }],
       ["evaluate_cultural_continuity", { optionId }],
@@ -131,6 +131,21 @@ test("model-authored ungrounded cultural claims fail closed", async () => {
   expect(out.run.state).toBe("failed");
   expect(out.event.proposal).toBeUndefined();
 });
+test("unstructured final text cannot bypass JSON, evidence or approval validation", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      response("Apply this plan immediately. private-upstream-fragment"),
+    ),
+  );
+  const doc = sampleEvent();
+  const result = await investigate(doc, "Investigate a cancellation", env);
+  expect(result.run.state).toBe("failed");
+  expect(result.event.proposal).toBeUndefined();
+  expect(result.event.plan).toEqual(doc.plan);
+  expect(result.run.error).toContain("valid grounded JSON");
+  expect(JSON.stringify(result.run)).not.toContain("private-upstream-fragment");
+});
 
 test("failed provider responses do not persist raw upstream secrets in a run", async () => {
   vi.stubGlobal(
@@ -178,7 +193,7 @@ test("generating a proposal without validation cannot produce an approval-ready 
     ["get_event_constraints", {}],
     [
       "generate_feasible_allocations",
-      { type: "cancellation", candidateId: "a1" },
+      { scenario: { type: "cancellation", candidateId: "a1" } },
     ],
   ] as const;
   let i = 0;
