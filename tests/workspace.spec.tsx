@@ -31,14 +31,20 @@ test("registration-free demo completes cancellation, explicit approval and repor
   expect(approve.length).toBeGreaterThan(0);
   fireEvent.click(approve[0]);
   await waitFor(() =>
-    expect(screen.getByText(/Organizer approved proposal/)).toBeTruthy(),
+    expect(screen.getByText(/Sample repair applied/)).toBeTruthy(),
   );
-  fireEvent.click(screen.getByRole("button", { name: "Recovery reports" }));
+  fireEvent.click(screen.getByRole("button", { name: /View approved report/ }));
   expect(screen.getByText("A decision you can explain.")).toBeTruthy();
   expect(
     screen.getByText(/organizer approved.*assignment changes/i),
   ).toBeTruthy();
   expect(screen.getByRole("button", { name: /Download report/i })).toBeTruthy();
+});
+test("sample explains how to access the live assistant without offering an unavailable run", () => {
+  render(<Workspace demo initialView="repair" />);
+  expect(screen.getByText(/fictional sample uses the structured/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /Investigate/ })).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "What changed?" })).toBeNull();
 });
 test("public sample offers individual closure and organizer-controlled venue editing", () => {
   render(<Workspace demo initialView="repair" />);

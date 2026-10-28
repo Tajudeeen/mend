@@ -4,6 +4,25 @@ import { sampleEvent } from "../lib/seed.ts";
 import { propose, validate, approve, metrics } from "../lib/planner.ts";
 import { collect, search } from "../lib/qloo.ts";
 const make = () => sampleEvent();
+test("cached search metrics match standalone measurements and never survive an event edit", () => {
+  const d = make();
+  const scenario = { type: "cancellation" as const, candidateId: "a1" };
+  const first = propose(d, scenario);
+  for (const o of first.options)
+    assert.deepEqual(o.metrics, metrics(d, o.assignments));
+  const secondMetrics = structuredClone(first.options[1].metrics);
+  first.options[0].metrics.cohorts.pulse = -100;
+  first.options[0].metrics.unknowns.push("test mutation");
+  assert.deepEqual(first.options[1].metrics, secondMetrics);
+  for (const c of d.candidates) c.affinity = { pulse: 0, soul: 0, explore: 0 };
+  d.plan = first.options[1].assignments;
+  const next = propose(d, scenario);
+  assert(next.options.length > 0);
+  for (const o of next.options) {
+    assert.deepEqual(o.metrics, metrics(d, o.assignments));
+    assert(!o.metrics.unknowns.includes("test mutation"));
+  }
+});
 test("seed is feasible and synthetic", () => {
   const d = make();
   assert.deepEqual(validate(d, d.plan), []);

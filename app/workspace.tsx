@@ -515,6 +515,9 @@ export default function Workspace({
           throw new Error(
             "Historical revision not found in this sample session.",
           );
+        // Let the pending state render before synchronous sample planning.
+        if (action === "propose" || action === "restoreRevision")
+          await new Promise((resolve) => setTimeout(resolve, 32));
         const result = historical
           ? proposeRestoration(doc, historical)
           : applyCommand(doc, action, extra);
@@ -539,7 +542,9 @@ export default function Workspace({
           },
           ...a,
         ]);
-        setNotice(result.detail);
+        setNotice(action === "approve"
+          ? "Sample repair applied. Your decision report is ready."
+          : result.detail);
         return { event: result.event } as ApiResponse;
       }
       const r = await fetch("/api/mend", {
@@ -1175,7 +1180,6 @@ export default function Workspace({
                 title="Something changed. What stays?"
                 description="Explore feasible repairs, see who benefits and choose what happens next."
               />
-              <RepairComparison doc={doc} scenario={scenario.type === "budget" ? { type: "budget", budget } : scenario} />
               <div className="repair-layout">
                 <section className="panel scenario-panel">
                   <span className="eyebrow">01 / WHAT HAPPENED?</span>
@@ -1392,15 +1396,6 @@ export default function Workspace({
                   </p>
                 </section>
                 <section className="repair-results">
-                  <AgentPanel
-                    doc={doc}
-                    demo={demo}
-                    onSaved={(d, a) => {
-                      setDoc(d);
-                      if (a) setAudit(a);
-                    }}
-                  />
-                  {p && <CulturalFingerprint doc={doc} />}
                   <div className="section-label">
                     <span className="eyebrow">
                       02 / COMPARE THE POSSIBILITIES
@@ -1453,14 +1448,24 @@ export default function Workspace({
                           {p.durationMs} ms
                         </span>
                       </div>
+                      {p.status === "approved" && (
+                        <section className="info-note" aria-label="Repair applied">
+                          <h3>Your repair is applied.</h3>
+                          <p>Review the original plan, approved changes, checks and evidence in the decision report.</p>
+                          <button className="btn small" onClick={() => navigate("reports")}>View approved report <ArrowRight size={14} /></button>
+                        </section>
+                      )}
+                      {p.truncated && (
+                        <p className="info-note" role="status">Search limit reached. These are the best returned options, not proven global optima. No option found is not proof that a repair is impossible.</p>
+                      )}
                       {!p.options.length && (
-                        <div className="alert error">
+                        <div className="alert error" role="alert">
                           <AlertCircle size={18} />
-                          <span>
-                            No feasible repair. Try a higher budget or revise
-                            the participant roster. The current plan is
-                            unchanged.
-                          </span>
+                          <div>
+                            <p>No repair returned. The active plan is unchanged.</p>
+                            <ul>{(p.reasons ?? []).map((reason, index) => <li key={index}>{reason}</li>)}</ul>
+                            <p>Review the stated conflict, missing inputs or search limit before trying again.</p>
+                          </div>
                         </div>
                       )}
                       {p.options.map((o, i) => (
@@ -1655,8 +1660,23 @@ export default function Workspace({
                       </details>
                     </>
                   )}
+                  {p && (
+                    <details className="trace">
+                      <summary>Inspect cultural coverage <ChevronDown size={14} /></summary>
+                      <CulturalFingerprint doc={doc} />
+                    </details>
+                  )}
+                  <AgentPanel
+                    doc={doc}
+                    demo={demo}
+                    onSaved={(d, a) => {
+                      setDoc(d);
+                      if (a) setAudit(a);
+                    }}
+                  />
                 </section>
               </div>
+              <RepairComparison doc={doc} scenario={scenario.type === "budget" ? { type: "budget", budget } : scenario} />
             </>
           )}
           {view === "reports" && <Reports doc={doc} />}

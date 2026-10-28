@@ -1,6 +1,6 @@
 # Connect MEND's live services
 
-The primary application is https://mend-deeencodes.vercel.app, deployed on Vercel with Next.js. It uses Supabase Auth and PostgreSQL for saved organizer events. The deployment is ready; live authentication, persistence and provider workflows still require configuration and verification. The retired ChatGPT Site link is no longer the review or submission destination. Compatibility code retains its separate identity and storage boundaries.
+The primary application is https://usemend.vercel.app, deployed on Vercel with Next.js. It uses Supabase Auth and PostgreSQL for saved organizer events. Authentication and the limited PostgreSQL connection are configured; the deployed Prisma table-read readiness probe passed. The owner reported a passing Groq tool-call check. Full authenticated writes and live Qloo repair still need verification. The retired ChatGPT Site link is no longer the review or submission destination. Compatibility code retains its separate identity and storage boundaries.
 
 ## 1. Request Qloo access
 
@@ -38,7 +38,7 @@ Create the key at https://console.groq.com/keys and enter it only in Vercel's Pr
 
 The adapter blocks recognizable OpenAI keys on Groq and Groq keys on OpenAI before sending a request. Groq GPT-OSS requests use low reasoning effort and sequential tool calls. The isolated connection probe allows 1,024 output tokens to include reasoning; other model probes remain at 128. The agent's 8-step/16-tool budget and human-approval requirement remain unchanged.
 
-Groq's free plan currently lists this model with per-minute and daily limits. Multi-step agent runs can hit those limits; availability through judging still needs verification. The host requires meaningful Qloo-integrated agentic behavior, not a particular LLM vendor. Sources checked October 28, 2026: https://console.groq.com/docs/rate-limits, https://console.groq.com/docs/openai, https://console.groq.com/docs/reasoning and https://qloo.devpost.com/rules. Live Groq access remains unverified until the account's key passes the deployed check and event workflow.
+Groq's free plan currently lists this model with per-minute and daily limits. Multi-step agent runs can hit those limits; availability through judging still needs verification. The host requires meaningful Qloo-integrated agentic behavior, not a particular LLM vendor. Sources checked October 28, 2026: https://console.groq.com/docs/rate-limits, https://console.groq.com/docs/openai, https://console.groq.com/docs/reasoning and https://qloo.devpost.com/rules. The owner reported that the deployed Groq tool-call check passed on October 28. A complete live event recovery remains unverified.
 
 ## 3. Finish Supabase and Vercel configuration
 
@@ -60,7 +60,7 @@ In Vercel, select the team containing the existing `mend` project, then open Set
 
 Add the applicable variables above and the Qloo/model variables, choose Node 24 and build command `pnpm build:node`, then create a new deployment. Environment changes apply to new deployments. Keep all secrets out of chat, Git and browser-exposed variables. Only the two Supabase public values use `NEXT_PUBLIC_`.
 
-In Supabase Auth → URL Configuration, set the production Site URL to `https://mend-deeencodes.vercel.app` and allow `https://mend-deeencodes.vercel.app/auth/callback`. The signup flow sets this callback explicitly. Both PKCE code callbacks and email token-hash callbacks are supported. For the token-hash email flow, the confirmation template link is:
+In Supabase Auth → URL Configuration, set the production Site URL to `https://usemend.vercel.app` and allow `https://usemend.vercel.app/auth/callback`. The signup flow sets this callback explicitly. Both PKCE code callbacks and email token-hash callbacks are supported. For the token-hash email flow, the confirmation template link is:
 
 ```html
 <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"

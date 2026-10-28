@@ -23,62 +23,70 @@ export default function AgentPanel({
         It can inspect evidence and prepare a proposal. Every applied change
         still needs your approval.
       </p>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (demo) {
-            setError(
-              "This sample uses the structured scenario controls below. Live language runs need a saved event and configured provider.",
-            );
-            return;
-          }
-          setBusy(true);
-          setError("");
-          try {
-            const r = await fetch("/api/agent", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id: doc.id,
-                  revision: doc.revision,
-                  instruction: text,
+      {demo ? (
+        <p className="info-note">
+          This fictional sample uses the structured disruption controls. The
+          live assistant needs a saved organizer event and configured services.{" "}
+          <a href="/events/new">Create your own event</a> to use it.
+        </p>
+      ) : (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (demo) {
+              setError(
+                "This sample uses the structured scenario controls below. Live language runs need a saved event and configured provider.",
+              );
+              return;
+            }
+            setBusy(true);
+            setError("");
+            try {
+              const r = await fetch("/api/agent", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    id: doc.id,
+                    revision: doc.revision,
+                    instruction: text,
+                  }),
                 }),
-              }),
-              d = (await r.json()) as {
-                event: EventDoc;
-                audit: Audit[];
-                error?: string;
-              };
-            if (!r.ok) throw new Error(d.error);
-            onSaved(d.event, d.audit);
-          } catch (e) {
-            setError((e as Error).message);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <label className="field">
-          <span className="sr-only">What changed?</span>
-          <textarea
-            rows={2}
-            required
-            minLength={5}
-            maxLength={1500}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Our opening act has cancelled. Keep the covered stage and locked vendors unchanged."
-          />
-        </label>
-        <button className="btn small" disabled={busy}>
-          {busy ? (
-            <Loader2 size={14} className="spin" />
-          ) : (
-            <Waypoints size={14} />
-          )}{" "}
-          Investigate <ArrowRight size={14} />
-        </button>
-      </form>
+                d = (await r.json()) as {
+                  event: EventDoc;
+                  audit: Audit[];
+                  error?: string;
+                };
+              if (!r.ok) throw new Error(d.error);
+              onSaved(d.event, d.audit);
+            } catch (e) {
+              setError((e as Error).message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <label className="field">
+            <span className="sr-only">What changed?</span>
+            <textarea
+              rows={2}
+              required
+              minLength={5}
+              maxLength={1500}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Our opening act has cancelled. Keep the covered stage and locked vendors unchanged."
+            />
+          </label>
+          <button className="btn small" disabled={busy}>
+            {busy ? (
+              <Loader2 size={14} className="spin" />
+            ) : (
+              <Waypoints size={14} />
+            )}{" "}
+            Investigate <ArrowRight size={14} />
+          </button>
+        </form>
+      )}
       {error && (
         <p className="alert error" role="alert">
           {error}

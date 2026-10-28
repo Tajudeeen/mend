@@ -142,7 +142,17 @@ export function validate(
   }
   return [...new Set(errors)];
 }
+function assignmentChanges(doc: EventDoc, plan: Assignment[]) {
+  return plan.filter((a) => {
+    const old = doc.plan.find((o) => o.slotId === a.slotId);
+    return old?.candidateId !== a.candidateId || old?.zoneId !== a.zoneId;
+  }).length;
+}
+type RankLookup = (id: string, cohortId: string) => number | undefined;
 export function metrics(doc: EventDoc, plan: Assignment[]): Metrics {
+  return measure(doc, plan, (id, cohortId) => rankScore(doc, id, cohortId));
+}
+function measure(doc: EventDoc, plan: Assignment[], rank: RankLookup): Metrics {
   const cohorts: Record<string, number> = {},
     domains: Record<string, number> = {},
     unknowns: string[] = [];
@@ -157,7 +167,7 @@ export function metrics(doc: EventDoc, plan: Assignment[]): Metrics {
           doc.candidates.find((c) => c.id === a.candidateId)?.kind === kind,
       );
       if (!aa.length) continue;
-      const ss = aa.map((a) => rankScore(doc, a.candidateId, co.id));
+      const ss = aa.map((a) => rank(a.candidateId, co.id));
       if (ss.some((s) => s === undefined))
         unknowns.push(`Missing ${kind} evidence for ${co.name}`);
       const v = ss.reduce<number>((n, s) => n + (s ?? 0), 0) / aa.length;
@@ -168,7 +178,7 @@ export function metrics(doc: EventDoc, plan: Assignment[]): Metrics {
           (a) =>
             doc.candidates.find((c) => c.id === a.candidateId)?.kind === kind,
         )
-        .map((a) => rankScore(doc, a.candidateId, co.id));
+        .map((a) => rank(a.candidateId, co.id));
       if (
         rr.length &&
         rr.every((s) => s !== undefined) &&
@@ -190,10 +200,7 @@ export function metrics(doc: EventDoc, plan: Assignment[]): Metrics {
       unknowns.push(`${c.name}: availability/terms unconfirmed`);
   }
   const total = doc.brief.cohorts.reduce((n, c) => n + c.weight, 0) || 1,
-    changes = plan.filter((a) => {
-      const old = doc.plan.find((o) => o.slotId === a.slotId);
-      return old?.candidateId !== a.candidateId || old?.zoneId !== a.zoneId;
-    }).length;
+    changes = assignmentChanges(doc, plan);
   return {
     cost: plan.reduce((n, a) => {
       const c = doc.candidates.find((c) => c.id === a.candidateId);
@@ -276,10 +283,23 @@ export function propose(
     truncated = false;
   const choices: Option[] = [],
     reasons: string[] = [];
+  const metricCache = new Map<string, Metrics>();
   if (!doc.slots.length)
     throw new Error("Add at least one program slot before planning.");
+  // Ranks depend on the event evidence and candidate pool, not a candidate's
+  // placement. Reuse them only within this synchronous, read-only search.
+  const rankCache = new Map<string, Map<string, number | undefined>>();
+  const cachedRank: RankLookup = (id, cohortId) => {
+    let cohort = rankCache.get(cohortId);
+    if (!cohort) {
+      cohort = new Map();
+      rankCache.set(cohortId, cohort);
+    }
+    if (!cohort.has(id)) cohort.set(id, rankScore(doc, id, cohortId));
+    return cohort.get(id);
+  };
   const supported = (id: string) =>
-    doc.brief.cohorts.every((co) => rankScore(doc, id, co.id) !== undefined);
+    doc.brief.cohorts.every((co) => cachedRank(id, co.id) !== undefined);
   if (
     strategy === "cultural" &&
     doc.mode === "live" &&
@@ -292,7 +312,7 @@ export function propose(
     strategy === "rules-only"
       ? 0
       : doc.brief.cohorts.reduce(
-          (n, c) => n + (rankScore(doc, id, c.id) ?? 0) * c.weight,
+          (n, c) => n + (cachedRank(id, c.id) ?? 0) * c.weight,
           0,
         );
   const eligible = doc.slots.map((s) => {
@@ -334,7 +354,23 @@ export function propose(
     if (cost > r.budget) return;
     if (i === doc.slots.length) {
       examined++;
-      const m = metrics(doc, plan);
+      // Candidate metrics are identical across zone placements. Only the
+      // active-plan change count and stability depend on placement here.
+      const metricKey = JSON.stringify(plan.map((a) => a.candidateId));
+      let shared = metricCache.get(metricKey);
+      if (!shared) {
+        shared = measure(doc, plan, cachedRank);
+        metricCache.set(metricKey, shared);
+      }
+      const changes = assignmentChanges(doc, plan);
+      const m: Metrics = {
+        ...shared,
+        cohorts: { ...shared.cohorts },
+        domains: { ...shared.domains },
+        unknowns: [...shared.unknowns],
+        changes,
+        stability: 1 - changes / Math.max(1, plan.length),
+      };
       let offeringChange: Option["offeringChange"];
       if (scenario.type === "offering") {
         const c = doc.candidates.find((c) => c.id === scenario.candidateId),

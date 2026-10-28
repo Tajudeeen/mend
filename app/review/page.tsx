@@ -25,19 +25,23 @@ export default function Review() {
         <section className="panel config-panel">
           <h2>Try a complete repair</h2>
           <ol>
-            <li>Open the sample event. It needs no organizer account.</li>
-            <li>Open Repair studio and withdraw the opening performer.</li>
+            <li>
+              Start the cancellation below. The opening act is already selected.
+            </li>
+            <li>
+              Select Find a thoughtful repair. The active plan stays unchanged.
+            </li>
             <li>
               Compare replacements, costs, cultural indices and unknown terms.
             </li>
-            <li>Approve one repair, then open Recovery reports.</li>
+            <li>Approve one repair, then select View approved report.</li>
             <li>
               Inspect the before/after assignments and download the decision
               record.
             </li>
           </ol>
-          <Link className="btn" href="/demo">
-            Open sample event
+          <Link className="btn" href="/demo?view=repair&incident=cancellation">
+            Start the cancellation
           </Link>
           <p className="fineprint">
             Fictional participants and synthetic preferences. The sample runs in
@@ -67,6 +71,12 @@ export default function Review() {
             Lock the opening performer, then simulate that performer cancelling.
             MEND must explain the conflict rather than silently break the lock.
             Unknown live booking terms must block approval until confirmed.
+          </p>
+          <p>
+            In Repair studio, use Compare repair strategies to inspect cultural
+            ranking and a rules-only baseline under the same practical
+            constraints. A different assignment is not proof of a better
+            real-world outcome.
           </p>
           <p>
             Reports preserve the approval-time evidence, assumptions and

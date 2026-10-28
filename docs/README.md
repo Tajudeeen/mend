@@ -14,6 +14,7 @@ Start with [the host requirements](HOST_REQUIREMENTS.md). The machine-readable [
 | How do I evaluate organizer usefulness?  | [Organizer study](ORGANIZER_STUDY.md)                                                       |
 | What goes into the submission?           | [Submission draft](SUBMISSION.md), still subject to the open gates                          |
 | What remains after this release?         | [Roadmap](ROADMAP.md)                                                                       |
+| What should improve before judging?      | [Participant and judge review](JUDGE_REVIEW.md)                                             |
 
 `RELEASE_0.3.md` is a historical release note. `evaluation/synthetic-results.json` is a historical synthetic run, not current live evidence. `pnpm benchmark` writes a fresh run to ignored `outputs/synthetic-results.json`, preserving the historical artifact. An explicit output path can be supplied to the benchmark when intentionally recording a new source artifact.
 
