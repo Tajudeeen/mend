@@ -89,3 +89,30 @@ test("Qloo refuses off-host paths before exposing its key", async () => {
   );
   expect(f).not.toHaveBeenCalled();
 });
+
+test("real SDK API-error handling distinguishes exhausted credits from an invalid key", async () => {
+  for (const [status, code, expected] of [
+    [429, "insufficient_quota", "quota_exhausted"],
+    [401, "invalid_api_key", "invalid_credentials"],
+  ] as const) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json(
+          {
+            error: {
+              code,
+              type: code,
+              message: "secret-model echoed provider response",
+            },
+          },
+          { status },
+        ),
+      ),
+    );
+    const result = await checkConnections({ ...env, QLOO_API_KEY: undefined });
+    expect(result.model.state).toBe("failed");
+    expect(result.model.code).toBe(expected);
+    expect(JSON.stringify(result)).not.toContain("secret-model");
+  }
+});

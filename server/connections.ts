@@ -3,10 +3,16 @@ import { z } from "zod";
 import type { RuntimeEnv } from "@/lib/runtime";
 import { search } from "@/lib/qloo";
 import { configuredModel } from "@/server/model-provider";
+import {
+  MissingConnectionToolCall,
+  modelFailure,
+  type ModelFailureCode,
+} from "@/server/model-errors";
 
 export type ConnectionResult = {
   state: "missing" | "passed" | "failed";
   detail: string;
+  code?: ModelFailureCode;
 };
 export async function checkConnections(env: RuntimeEnv) {
   const qloo = async (): Promise<ConnectionResult> => {
@@ -68,19 +74,18 @@ export async function checkConnections(env: RuntimeEnv) {
             z.object({ nonce: z.literal(nonce) }).safeParse(call.input).success,
         )
       )
-        throw new Error("Missing expected tool call.");
+        throw new MissingConnectionToolCall();
       return {
         state: "passed",
         detail:
           "The configured model returned a valid tool call. Full event recovery remains a separate live test.",
       };
-    } catch {
-      // Provider errors can contain URLs, keys or echoed request data.
-      return {
-        state: "failed",
-        detail:
-          "Model check failed. Verify the key, HTTPS API base, model access, quota and tool-calling support.",
-      };
+    } catch (error) {
+      const failure = modelFailure(error);
+      console.warn("MEND model connection check failed", {
+        code: failure.code,
+      });
+      return { state: "failed", ...failure };
     }
   };
   const [qlooResult, modelResult] = await Promise.all([qloo(), model()]);
