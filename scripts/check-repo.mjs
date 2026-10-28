@@ -66,6 +66,12 @@ for (const file of new Set(files)) {
       throw new Error(`Broken documentation link in ${file}: ${target}`);
   }
 }
+// The hosting adapter must consume the directory Next actually builds.
+const nextConfig = (await import("../next.config.ts")).default;
+const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8"));
+if ((nextConfig.distDir ?? ".next") !== vercelConfig.outputDirectory)
+  throw new Error("Vercel outputDirectory must match Next.js distDir.");
+
 console.log(
   JSON.stringify({
     repositoryChecks: "passed",

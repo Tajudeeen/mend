@@ -96,3 +96,8 @@ Added a read-only comparison of cultural and rules-only repairs. Both retain the
 `pnpm verify` now runs repository/secret checks, Prisma generation, types, lint, domain/provider/component tests, synthetic benchmark, Node build, Worker build and the Worker/D1 workflow. It emits source metadata and exact pass/fail steps in ignored `outputs/verification.json`. CI runs this same command and retains reports as artifacts. Fresh benchmarks go to ignored outputs; historical benchmark files are not silently overwritten. Consult the generated report or CI run for this revision's actual execution result.
 
 Live Qloo/model repair, anonymous hosting access, deployed primary authentication/persistence, browser/device QA, organizer impact and Devpost confirmation remain unverified. This cleanup does not mark any of them complete.
+
+
+## Vercel packaging follow-up, October 28, 2026
+
+The supplied Vercel log for `2ffccdc` passed compilation, TypeScript and page generation, then failed `NEXT_OUTPUT_DIR_MISSING`: the adapter searched `.next` while Next emitted `.next-node`. The repository now explicitly configures `vercel.json` `outputDirectory` as `.next-node`, and its repository check imports the actual Next config to prevent drift. `engines.node` is pinned to `24.x`. Local build success does not alone establish successful Vercel packaging; the next remote deployment must be checked.

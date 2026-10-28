@@ -31,3 +31,8 @@ The existing Sites URL uses Vinext/Worker, D1 and ChatGPT identity. `pnpm build`
 Compatibility storage and Supabase storage are separate. Existing D1 owners cannot be silently treated as Supabase UUIDs. An explicit, verified account-link and migration process is required to transfer data.
 
 Qloo and model keys remain unset. The public sample is fictional and client-local; server-saved data requires authentication. Preserve access controls when publishing. Repository visibility is currently private and remains a separate release gate from the MIT license.
+
+
+## Vercel output directory
+
+The Node target intentionally writes to `.next-node`, separate from the Sites compatibility build. `vercel.json` must set `outputDirectory` to `.next-node`, matching `next.config.ts` `distDir`. A Next.js compile can succeed while Vercel packaging fails if its output directory remains `.next`. `pnpm check:repo` now checks this agreement. Node is pinned to `24.x`.
