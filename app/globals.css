@@ -3509,3 +3509,9 @@ footer > span:last-child {
     min-height: 260px;
   }
 }
+
+.readiness-list { list-style: none; padding: 0; display: grid; gap: .5rem; }
+.readiness-list li { display: flex; align-items: center; gap: .75rem; }
+.readiness-list li > span { min-width: 5rem; font-size: .75rem; }
+.readiness-list button { text-align: left; white-space: normal; }
+@media (max-width: 600px) { .readiness-list li { align-items: flex-start; } }

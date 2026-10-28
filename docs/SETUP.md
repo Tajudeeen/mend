@@ -5,7 +5,7 @@ The existing preview is https://mend-events.deeen-code.chatgpt.site. It uses Cha
 ## 1. Request Qloo access
 
 1. Join the current event at https://qloo.devpost.com/.
-2. Open the organizer-linked developer guide and complete its API access form: https://docs.qloo.com/reference/qloo-llm-hackathon-developer-guide#getting-your-api-key. The current rules explicitly direct entrants to that form: https://qloo.devpost.com/rules.
+2. Open https://qloo.devpost.com/resources and follow the first API-key link. The developer guide linked from the overview is: https://docs.qloo.com/reference/qloo-llm-hackathon-developer-guide#getting-your-api-key. The current rules explicitly direct entrants to that form: https://qloo.devpost.com/rules.
 3. Use the key and API origin supplied with that access. Set `QLOO_API_KEY` and `QLOO_API_BASE` on the server. MEND allows `https://api.qloo.com`, `https://hackathon.api.qloo.com` and `https://staging.api.qloo.com`. These hosts are not interchangeable accounts. Do not guess an API host or send a key to several hosts to find a match.
 
 The developer-guide page was unavailable to the research tool during this handoff. Follow the current organizer link rather than an old contest's direct form URL.
@@ -64,3 +64,12 @@ For the existing Sites deployment, set only `QLOO_API_KEY`, `QLOO_API_BASE`, `LL
 5. Complete the paired organizer trial at `/study`, review raw timings and document limitations. No benefit percentage is claimed before that study.
 
 Real credentials, Node deployment authorization/connectivity, full browser/device checks and an actual organizer trial remain external release gates. Automated local tests cannot supply them.
+
+
+## Preparation while access is pending
+
+The owner requested Qloo access on October 28, 2026 and expects a response in about 24 hours. That expectation is not a confirmed provider service-level guarantee. No key or live response is recorded in source.
+
+The live event overview now lists six preparation checks with destinations for missing inputs: roster/slots/zones, audience seeds, participant references, comparable evidence, a valid plan and confirmed terms. It evaluates event contents only. Completing this checklist does not establish a working provider connection or a successful live repair.
+
+A report can be checked locally in the browser at `/verify`. The file is not uploaded. Its checker is shared with the CLI, rejects missing/duplicate/unreferenced receipts and modified raw responses, and treats an empty receipt list as no evidence. Passing hashes do not authenticate Qloo or verify derived ranks.

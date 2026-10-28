@@ -1,5 +1,6 @@
 "use client";
 import type { EventDoc } from "@/lib/model";
+import Link from "./page-link";
 import { reportEvidence } from "@/lib/report-evidence";
 import { Download, ArrowRight } from "lucide-react";
 export default function Reports({ doc }: { doc: EventDoc }) {
@@ -13,6 +14,7 @@ export default function Reports({ doc }: { doc: EventDoc }) {
             Approved recovery reports keep the original assignment, the change,
             the checks and the evidence together.
           </p>
+          <Link href="/verify">Inspect a downloaded report</Link>
         </div>
       </section>
       {!doc.reports?.length ? (

@@ -8,6 +8,8 @@ Working deployment: https://mend-events.deeen-code.chatgpt.site
 
 Reviewer walkthrough: https://mend-events.deeen-code.chatgpt.site/review
 
+Browser-local source response checker: https://mend-events.deeen-code.chatgpt.site/verify
+
 Sample workflow: https://mend-events.deeen-code.chatgpt.site/demo
 
 Source: https://github.com/Tajudeeen/mend
@@ -84,7 +86,7 @@ The sample session is temporary browser state. Saved organizer events and approv
 
 The current repository is public and includes an MIT license. See [the host and product checklist](docs/HOST_REQUIREMENTS.md) and [the submission draft](docs/SUBMISSION.md). The Sites publication is currently owner-private and has no Qloo/model runtime credentials. Public judge access and live integration proof remain gates.
 
-New approved reports snapshot their source receipts and decision inputs, so later evidence refreshes cannot erase the historical sources. Legacy reports disclose missing sources. Download a report and run `pnpm verify:report /absolute/path/to/mend-report.json` to check its stored response hashes. This does not authenticate Qloo as issuer or validate derived scores.
+New approved reports snapshot their source receipts and decision inputs, so later evidence refreshes cannot erase the historical sources. Legacy reports disclose missing sources. Download a report and open `/verify` to inspect its stored source responses without uploading the file. The same checker is available with `pnpm verify:report /absolute/path/to/mend-report.json`. Reports with no receipts are labeled as having no source evidence to check. This does not authenticate Qloo as issuer or validate derived scores.
 
 ## Evidence and remaining gates
 

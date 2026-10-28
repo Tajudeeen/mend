@@ -72,3 +72,14 @@ These checks do not complete the live-Qloo, live-model, public-access, deployed-
 - 50 native tests and 38 Vitest tests pass across the full suites and the focused agent-budget follow-up. TypeScript and lint pass. The Next.js production build and Worker/database smoke are checked for this revision before publication.
 
 Live credentials, production authentication, browser/device QA and public judge access remain separate gates. This pass makes no claim that every possible defect has been eliminated.
+
+
+## Independent preparation and report inspection, October 28, 2026
+
+- Added a six-step live-event preparation panel. It uses current planner coverage and constraints, shows missing audience/participant inputs and unconfirmed active-plan terms, and links to the relevant editor. Synthetic mode does not satisfy live evidence preparation.
+- Added `/verify`, a browser-local approved-report inspector. File contents are not sent to a server. Oversized files are rejected before reading, changing files clears prior results, and empty receipts are labeled as no evidence rather than a successful live verification.
+- The browser and CLI share the same parser/hash checker. Duplicate, missing and unreferenced receipts, malformed reports and changed response bodies are refused. The CLI checks file size before loading its contents.
+- Hashing is now a small shared module, preserving the existing Qloo receipt algorithm. Hash consistency does not authenticate the issuer, establish a live request, validate derived scores or demonstrate organizer impact.
+- Tests cover current/stale cultural pools, blank events, unknown terms, report tampering and the local file UI. No live provider credential is required by these checks.
+
+Provider access and browser/device QA remain separate gates. The previous supported browser preview returned a connection refusal, so no browser/device verification is claimed by the component tests.

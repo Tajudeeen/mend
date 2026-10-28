@@ -1,3 +1,5 @@
+import { digest } from "./integrity.ts";
+export { digest } from "./integrity.ts";
 import { culturalRefs, culturalPoolKey } from "./culture.ts";
 import { z } from "zod";
 import { boundedRequest } from "./rate-limit.ts";
@@ -53,12 +55,6 @@ async function readQlooBody(response: Response) {
     }
     reader.releaseLock();
   }
-}
-export async function digest(value: unknown) {
-  const bytes = new TextEncoder().encode(JSON.stringify(value));
-  return [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))]
-    .map((x) => x.toString(16).padStart(2, "0"))
-    .join("");
 }
 export async function qloo(
   env: QlooEnv,

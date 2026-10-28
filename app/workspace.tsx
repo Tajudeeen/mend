@@ -2,6 +2,7 @@
 
 import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
+import ReadinessPanel from "@/components/mend/readiness-panel";
 import ProductionDesk from "@/components/mend/production-desk";
 import CulturalFingerprint from "@/components/mend/cultural-fingerprint";
 import VendorProfile from "@/components/mend/vendor-profile";
@@ -769,6 +770,7 @@ export default function Workspace({
           )}
           {view === "overview" && (
             <>
+              <ReadinessPanel doc={doc} navigate={navigate} />
               <ProductionDesk doc={doc} navigate={navigate} />
               <section className="stats">
                 <div>

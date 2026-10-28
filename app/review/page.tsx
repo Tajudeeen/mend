@@ -74,6 +74,11 @@ export default function Review() {
             response. They don’t authenticate Qloo as the issuer or prove future
             audience behavior.
           </p>
+          <p>
+            <Link href="/verify">
+              Inspect a downloaded report in your browser
+            </Link>
+          </p>
           <Link href="https://github.com/Tajudeeen/mend/blob/main/docs/VERIFICATION.md">
             Verification and limitations
           </Link>
