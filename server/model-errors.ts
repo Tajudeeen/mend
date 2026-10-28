@@ -8,6 +8,7 @@ export type ModelFailureCode =
   | "provider_unavailable"
   | "timeout"
   | "tool_call_missing"
+  | "tool_generation_failed"
   | "connection_failed";
 
 export class MissingConnectionToolCall extends Error {}
@@ -59,6 +60,12 @@ export function modelFailure(error: unknown): {
       : outer;
   const code = typeof body.code === "string" ? body.code : "";
   const type = typeof body.type === "string" ? body.type : "";
+  if (code === "tool_use_failed")
+    return {
+      code: "tool_generation_failed",
+      detail:
+        "The provider could not generate a valid tool call. No unvalidated tool arguments were executed. Try a more capable tool-calling model or a narrower instruction.",
+    };
   if (
     [
       "insufficient_quota",

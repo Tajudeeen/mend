@@ -15,6 +15,7 @@ test.each([
   [429, "insufficient_quota", "quota_exhausted"],
   [429, "rate_limit_exceeded", "rate_limited"],
   [400, "unsupported_parameter", "invalid_request"],
+  [400, "tool_use_failed", "tool_generation_failed"],
   [503, "server_is_overloaded", "provider_unavailable"],
 ])(
   "provider HTTP %s / %s becomes a safe %s diagnosis",
