@@ -11,8 +11,36 @@ function db() {
     adapter: new PrismaPg({
       connectionString: process.env.DATABASE_URL,
       max: 3,
+      connectionTimeoutMillis: 5000,
     }),
   }));
+}
+// Readiness probes expose only a bounded status, never a connection URL or raw error.
+let readiness: { expires: number; result: Promise<boolean> } | undefined;
+export function postgresReady(): Promise<boolean> {
+  if (!process.env.DATABASE_URL) return Promise.resolve(false);
+  if (readiness && readiness.expires > Date.now()) return readiness.result;
+  const result = withOwner(
+    "00000000-0000-4000-8000-000000000000",
+    async (tx) => {
+      const roles = await tx.$queryRaw<
+        { rolsuper: boolean; rolbypassrls: boolean }[]
+      >`
+      SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user
+    `;
+      if (!roles.length || roles[0].rolsuper || roles[0].rolbypassrls)
+        return false;
+      // Exercise the actual Prisma table and RLS path without returning organizer data.
+      await tx.event.findMany({
+        where: { owner: "00000000-0000-4000-8000-000000000000" },
+        select: { id: true },
+        take: 1,
+      });
+      return true;
+    },
+  ).catch(() => false);
+  readiness = { expires: Date.now() + 30000, result };
+  return result;
 }
 const json = (value: unknown) => JSON.parse(JSON.stringify(value));
 async function snapshot(

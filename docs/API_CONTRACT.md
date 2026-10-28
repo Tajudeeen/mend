@@ -32,7 +32,7 @@ Errors use `{error}`. Authentication failure returns 401, missing owned event 40
 
 - `POST /api/agent`: authenticated, bounded natural-language proposal request with event/revision. Stores run/proposal through CAS. No approval tool.
 - `/api/culture`: authenticated Qloo tags/discovery adapter, with query and rate limits.
-- `/api/health`: runtime/configuration indicators without credentials; configuration is not a live connectivity check.
+- `/api/health`: runtime/configuration indicators without credentials; configuration is not a live connectivity check. `?probe=database` additionally checks the Node runtime’s actual Prisma table access and rejects superuser/RLS-bypass connections. It returns only `databaseReady`, uses a 30-second process cache and reports HTTP 503 on failure. This does not prove event writes or a complete authenticated workflow.
 - `/api/auth`, `/auth/callback`: Supabase sign-in/sign-up/session routes. Production redirect settings and full flow require verification.
 
 ## Qloo boundary
