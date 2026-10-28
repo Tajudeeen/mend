@@ -2,7 +2,11 @@ import { generateText, tool } from "ai";
 import { z } from "zod";
 import type { RuntimeEnv } from "@/lib/runtime";
 import { search } from "@/lib/qloo";
-import { configuredModel } from "@/server/model-provider";
+import {
+  configuredModel,
+  groqReasoningModel,
+  modelCallOptions,
+} from "@/server/model-provider";
 import {
   MissingConnectionToolCall,
   modelFailure,
@@ -63,7 +67,8 @@ export async function checkConnections(env: RuntimeEnv) {
           }),
         },
         toolChoice: { type: "tool", toolName: "confirm_connection" },
-        maxOutputTokens: 128,
+        ...modelCallOptions(env),
+        maxOutputTokens: groqReasoningModel(env) ? 1024 : 128,
         maxRetries: 0,
         abortSignal: AbortSignal.timeout(10000),
       });

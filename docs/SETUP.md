@@ -24,6 +24,22 @@ Set all three server variables:
 
 The endpoint must have no embedded credentials, query string or fragment. MEND refuses redirects for keyed Qloo and model calls. A short connection probe uses API quota; a passing probe does not prove full recovery quality.
 
+### Selected provider: Groq
+
+The selected configuration is Groq's OpenAI-compatible Chat Completions API:
+
+```env
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=openai/gpt-oss-20b
+LLM_API_KEY=YOUR_GROQ_KEY
+```
+
+Create the key at https://console.groq.com/keys and enter it only in Vercel's Production `LLM_API_KEY` secret. Replace the OpenAI key; keys are not interchangeable between providers. Redeploy after changing environment variables, then run Account & connections → Test Qloo and model. A passing probe does not establish full repair quality.
+
+The adapter blocks recognizable OpenAI keys on Groq and Groq keys on OpenAI before sending a request. Groq GPT-OSS requests use low reasoning effort and sequential tool calls. The isolated connection probe allows 1,024 output tokens to include reasoning; other model probes remain at 128. The agent's 8-step/16-tool budget and human-approval requirement remain unchanged.
+
+Groq's free plan currently lists this model with per-minute and daily limits. Multi-step agent runs can hit those limits; availability through judging still needs verification. The host requires meaningful Qloo-integrated agentic behavior, not a particular LLM vendor. Sources checked October 28, 2026: https://console.groq.com/docs/rate-limits, https://console.groq.com/docs/openai, https://console.groq.com/docs/reasoning and https://qloo.devpost.com/rules. Live Groq access remains unverified until the account's key passes the deployed check and event workflow.
+
 ## 3. Finish Supabase and Vercel configuration
 
 The Supabase project already exists: `mend`, project reference `qentnogldttrhmobgpzk`. Do not create another one.

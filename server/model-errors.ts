@@ -11,6 +11,11 @@ export type ModelFailureCode =
   | "connection_failed";
 
 export class MissingConnectionToolCall extends Error {}
+export class ModelProviderKeyMismatch extends Error {
+  constructor(readonly selectedProvider: "Groq" | "OpenAI") {
+    super("Provider key mismatch");
+  }
+}
 
 // Provider messages, headers and URLs may contain secrets or echoed user data.
 // Inspect bounded structured fields and return only fixed application messages.
@@ -18,6 +23,11 @@ export function modelFailure(error: unknown): {
   code: ModelFailureCode;
   detail: string;
 } {
+  if (error instanceof ModelProviderKeyMismatch)
+    return {
+      code: "invalid_credentials",
+      detail: `${error.selectedProvider} is selected, but LLM_API_KEY belongs to a different provider. Replace it with a ${error.selectedProvider} API key in Vercel and redeploy. No provider request was sent.`,
+    };
   if (error instanceof MissingConnectionToolCall)
     return {
       code: "tool_call_missing",

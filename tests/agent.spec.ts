@@ -31,62 +31,80 @@ test("provider adapter refuses missing configuration without making a network ca
   ).rejects.toThrow("not configured");
   expect(f).not.toHaveBeenCalled();
 });
-test("structured language workflow uses registered tools and never applies a proposed repair", async () => {
-  const d = sampleEvent(),
-    original = structuredClone(d.plan);
-  const optionId = propose(d, { type: "cancellation", candidateId: "a1" })
-    .options[0].id;
-  let i = 0;
-  const calls = [
-    ["get_event_plan", {}],
-    ["get_event_constraints", {}],
-    [
-      "generate_feasible_allocations",
-      { type: "cancellation", candidateId: "a1" },
-    ],
-    ["validate_hard_constraints", { optionId }],
-    ["evaluate_cultural_continuity", { optionId }],
-    ["prepare_approval_request", {}],
-  ] as const;
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async () => {
-      if (i < calls.length) {
-        const [name, args] = calls[i++];
-        return response(null, [
-          {
-            id: "call-" + i,
-            type: "function",
-            function: { name, arguments: JSON.stringify(args) },
-          },
-        ]);
-      }
-      return response(
-        JSON.stringify({
-          status: "awaiting_approval",
-          claims: [
+test.each([
+  { label: "generic", config: env },
+  {
+    label: "Groq GPT-OSS",
+    config: {
+      LLM_API_KEY: "gsk_contract_test_not_a_real_key",
+      LLM_BASE_URL: "https://api.groq.com/openai/v1",
+      LLM_MODEL: "openai/gpt-oss-20b",
+    },
+  },
+])(
+  "$label workflow uses registered tools and leaves approval to the organizer",
+  async ({ label, config }) => {
+    const d = sampleEvent(),
+      original = structuredClone(d.plan);
+    const optionId = propose(d, { type: "cancellation", candidateId: "a1" })
+      .options[0].id;
+    let i = 0;
+    const calls = [
+      ["get_event_plan", {}],
+      ["get_event_constraints", {}],
+      [
+        "generate_feasible_allocations",
+        { type: "cancellation", candidateId: "a1" },
+      ],
+      ["validate_hard_constraints", { optionId }],
+      ["evaluate_cultural_continuity", { optionId }],
+      ["prepare_approval_request", {}],
+    ] as const;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url, options) => {
+        if (label === "Groq GPT-OSS") {
+          const body = JSON.parse(options.body);
+          expect(body.reasoning_effort).toBe("low");
+          expect(body.parallel_tool_calls).toBe(false);
+        }
+        if (i < calls.length) {
+          const [name, args] = calls[i++];
+          return response(null, [
             {
-              kind: "operational",
-              text: "A proposal is ready for organizer review.",
-              evidenceIds: [],
+              id: "call-" + i,
+              type: "function",
+              function: { name, arguments: JSON.stringify(args) },
             },
-          ],
-        }),
-      );
-    }),
-  );
-  const out = await investigate(
-    d,
-    "Our opening performer a1 has cancelled. Find feasible repairs and ask for approval.",
-    env,
-  );
-  expect(out.run.error).toBeUndefined();
-  expect(out.run.state).toBe("awaiting_approval");
-  expect(out.run.steps.map((s) => s.tool)).toEqual(calls.map((c) => c[0]));
-  expect(out.event.plan).toEqual(original);
-  expect(out.event.proposal?.status).toBe("pending");
-  expect(out.event.proposal?.options.length).toBeGreaterThan(0);
-});
+          ]);
+        }
+        return response(
+          JSON.stringify({
+            status: "awaiting_approval",
+            claims: [
+              {
+                kind: "operational",
+                text: "A proposal is ready for organizer review.",
+                evidenceIds: [],
+              },
+            ],
+          }),
+        );
+      }),
+    );
+    const out = await investigate(
+      d,
+      "Our opening performer a1 has cancelled. Find feasible repairs and ask for approval.",
+      config,
+    );
+    expect(out.run.error).toBeUndefined();
+    expect(out.run.state).toBe("awaiting_approval");
+    expect(out.run.steps.map((s) => s.tool)).toEqual(calls.map((c) => c[0]));
+    expect(out.event.plan).toEqual(original);
+    expect(out.event.proposal?.status).toBe("pending");
+    expect(out.event.proposal?.options.length).toBeGreaterThan(0);
+  },
+);
 test("model-authored ungrounded cultural claims fail closed", async () => {
   vi.stubGlobal(
     "fetch",
