@@ -1,12 +1,63 @@
 import { test, expect, vi, afterEach } from "vitest";
 import { checkConnections } from "../server/connections";
 import { configuredModel, modelCallOptions } from "../server/model-provider";
+import { investigate } from "../server/agent";
+import { sampleEvent } from "../lib/seed";
 const env = {
   LLM_API_KEY: "gsk_contract_test_not_a_real_key",
   LLM_BASE_URL: "https://api.groq.com/openai/v1",
   LLM_MODEL: "openai/gpt-oss-20b",
 };
 afterEach(() => vi.unstubAllGlobals());
+test("Groq agent JSON mode includes explicit JSON instructions and preserves the active plan", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url, options) => {
+      const body = JSON.parse(String(options.body));
+      expect(body.response_format).toEqual({ type: "json_object" });
+      expect(
+        body.messages.some(
+          (m: { content?: string }) =>
+            typeof m.content === "string" && m.content.includes("JSON object"),
+        ),
+      ).toBe(true);
+      return Response.json({
+        id: "groq-output",
+        object: "chat.completion",
+        created: 1,
+        model: env.LLM_MODEL,
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: JSON.stringify({
+                status: "needs_information",
+                claims: [
+                  {
+                    kind: "limitation",
+                    text: "Booking information is missing.",
+                    evidenceIds: [],
+                  },
+                ],
+              }),
+            },
+            finish_reason: "stop",
+          },
+        ],
+        usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+      });
+    }),
+  );
+  const doc = sampleEvent();
+  const result = await investigate(
+    doc,
+    "Report missing booking information",
+    env,
+  );
+  expect(result.run.state).toBe("needs_information");
+  expect(result.event.plan).toEqual(doc.plan);
+});
 test("Groq probe sends sequential low-effort tools with a bounded reasoning budget", async () => {
   const fetcher = vi.fn(async (url: unknown, options: RequestInit) => {
     expect(String(url)).toBe("https://api.groq.com/openai/v1/chat/completions");

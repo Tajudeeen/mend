@@ -10,7 +10,7 @@ MEND helps music-led market and cultural pop-up organizers repair a programme af
 - Report source checker: https://usemend.vercel.app/verify
 - Source: https://github.com/Tajudeeen/mend
 
-The public application is https://usemend.vercel.app. An anonymous browser review on October 28 reached the sample, generated three cancellation repairs and approved one fictional repair. The former `mend-deeencodes.vercel.app` alias still redirects anonymous requests to Vercel sign-in and is not the submission destination. The owner received a Qloo key and its assigned origin is configured; a successful search and full event insights remain unverified. The owner reported a passing Groq tool-call check; full live cultural repair, authenticated event writes, mobile QA and organizer impact remain unverified. The public sample does not close the live integration gates.
+The public application is https://usemend.vercel.app. An anonymous browser review on October 28 reached the sample, generated three cancellation repairs and approved one fictional repair. The former `mend-deeencodes.vercel.app` alias still redirects anonymous requests to Vercel sign-in and is not the submission destination. Authenticated Qloo search, one event-specific artist Insights batch, Groq tool-call probing and create/mutation/readback of a labelled verification event were observed on October 28. Full live repair/approval, complete cultural coverage, cross-owner write isolation, mobile QA and organizer impact remain unverified. The public sample does not close the live integration gates.
 
 For event-specific source checks, server readback and the limits of each claim, see [the evidence workflow](docs/EVIDENCE_WORKFLOW.md).
 

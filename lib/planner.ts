@@ -76,6 +76,10 @@ export function validate(
 ): string[] {
   const r = effective(doc, scenario),
     errors: string[] = [];
+  if (!doc.slots.length)
+    errors.push(
+      "No programme slots are configured; the plan cannot be assessed.",
+    );
   if ((doc.constraints?.minimumSpacing ?? 0) > 0)
     errors.push(
       "Spacing checks need a scaled venue plan. Remove the unsupported spacing requirement before planning.",

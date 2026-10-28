@@ -311,17 +311,21 @@ function AudienceBars({
           <div>
             <span>{c.name}</span>
             <small>
-              {m.unknowns.some((s) => s.startsWith("Missing"))
-                ? "Awaiting evidence"
-                : `${pct(m.cohorts[c.id])}/100`}
+              {!plan.length
+                ? "Awaiting plan"
+                : m.unknowns.some((s) => s.startsWith("Missing"))
+                  ? "Awaiting evidence"
+                  : `${pct(m.cohorts[c.id])}/100`}
             </small>
           </div>
           <div className="bar-track">
             <div
               style={{
-                width: m.unknowns.some((s) => s.startsWith("Missing"))
-                  ? "0"
-                  : pct(m.cohorts[c.id]) + "%",
+                width:
+                  !plan.length ||
+                  m.unknowns.some((s) => s.startsWith("Missing"))
+                    ? "0"
+                    : pct(m.cohorts[c.id]) + "%",
                 background: ["#5b7950", "#a1b482", "#c5a579"][i],
               }}
             />
@@ -1030,7 +1034,8 @@ export default function Workspace({
                     </small>
                   </span>
                   <strong>
-                    {m.unknowns.some((s) => s.startsWith("Missing"))
+                    {!doc.plan.length ||
+                    m.unknowns.some((s) => s.startsWith("Missing"))
                       ? "—"
                       : pct(m.weighted)}
                     <small> / 100</small>
@@ -1040,11 +1045,13 @@ export default function Workspace({
                 <div>
                   <span>Supplied operational checks</span>
                   <strong>
-                    {violations.length
-                      ? "Review needed"
-                      : m.unknowns.length
-                        ? "Conditional"
-                        : "Passed"}
+                    {!doc.plan.length || !doc.slots.length
+                      ? "Not assessed"
+                      : violations.length
+                        ? "Review needed"
+                        : m.unknowns.length
+                          ? "Conditional"
+                          : "Passed"}
                     {violations.length || m.unknowns.length ? (
                       <AlertCircle size={22} />
                     ) : (
@@ -1052,11 +1059,13 @@ export default function Workspace({
                     )}
                   </strong>
                   <p>
-                    {violations.length
-                      ? violations[0]
-                      : m.unknowns.length
-                        ? "Unconfirmed terms remain. Review the roster."
-                        : "Checks use the supplied event facts."}
+                    {!doc.plan.length || !doc.slots.length
+                      ? "Add programme slots, participants and spaces, then build a plan to assess."
+                      : violations.length
+                        ? violations[0]
+                        : m.unknowns.length
+                          ? "Unconfirmed terms remain. Review the roster."
+                          : "Checks use the supplied event facts."}
                   </p>
                 </div>
               </section>
@@ -1112,7 +1121,8 @@ export default function Workspace({
                     <span>
                       Lowest group fit{" "}
                       <b>
-                        {m.unknowns.some((s) => s.startsWith("Missing"))
+                        {!doc.plan.length ||
+                        m.unknowns.some((s) => s.startsWith("Missing"))
                           ? "—"
                           : pct(m.floor) + "/100"}
                       </b>
@@ -2294,7 +2304,11 @@ export default function Workspace({
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
-            <button className="btn" disabled={!!busy || !configured}>
+            <button
+              className="btn"
+              aria-label="Search Qloo entities"
+              disabled={!!busy || !configured}
+            >
               <Search size={16} />
             </button>
           </form>

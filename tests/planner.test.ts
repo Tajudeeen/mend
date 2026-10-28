@@ -3,7 +3,14 @@ import assert from "node:assert/strict";
 import { sampleEvent } from "../lib/seed.ts";
 import { propose, validate, approve, metrics } from "../lib/planner.ts";
 import { collect, search } from "../lib/qloo.ts";
+import { newEvent } from "../lib/new-event.ts";
 const make = () => sampleEvent();
+test("an empty event cannot pass operational validation", () => {
+  const doc = newEvent(sampleEvent().brief);
+  assert(
+    validate(doc, []).some((reason) => reason.includes("cannot be assessed")),
+  );
+});
 test("cached search metrics match standalone measurements and never survive an event edit", () => {
   const d = make();
   const scenario = { type: "cancellation" as const, candidateId: "a1" };

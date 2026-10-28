@@ -10,6 +10,7 @@ import {
 } from "@testing-library/react";
 import Workspace from "../app/workspace";
 import { sampleEvent } from "../lib/seed";
+import { newEvent } from "../lib/new-event";
 beforeEach(() => {
   history.replaceState({}, "", "/");
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
@@ -41,6 +42,21 @@ test("a failed live load never shows the sample or allows sample repair actions"
   expect(
     screen.queryByRole("button", { name: /Find a thoughtful repair/ }),
   ).toBeNull();
+});
+test("a blank live event reports unassessed checks and no cultural index", async () => {
+  const doc = newEvent(sampleEvent().brief);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url) =>
+      String(url).includes("?id=")
+        ? Response.json({ event: doc, audit: [], qlooConfigured: true })
+        : Response.json({ events: [], qlooConfigured: true }),
+    ),
+  );
+  render(<Workspace eventId={doc.id} />);
+  expect(await screen.findByText("Not assessed")).toBeTruthy();
+  expect(screen.queryByText("Passed")).toBeNull();
+  expect(screen.getAllByText("Awaiting plan").length).toBe(3);
 });
 test("saved live evidence starts empty, exposes real readback and navigates with focus and reduced motion", async () => {
   const doc = sampleEvent("00000000-0000-4000-8000-000000000099");
