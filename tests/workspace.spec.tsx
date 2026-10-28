@@ -95,6 +95,8 @@ test("sample evidence labels its storage and audit trail without making server c
   ).toBeTruthy();
   expect(screen.getByText("Temporary browser session")).toBeTruthy();
   expect(screen.getByText("Sample interaction trail")).toBeTruthy();
+  expect(screen.getByText("Sample only")).toBeTruthy();
+  expect(screen.queryByText("Key needed")).toBeNull();
   expect(screen.getByRole("button", { name: "Live Qloo" })).toHaveProperty(
     "disabled",
     true,

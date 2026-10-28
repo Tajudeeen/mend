@@ -1975,7 +1975,11 @@ export default function Workspace({
                     <span
                       className={"tiny-pill " + (configured ? "" : "amber")}
                     >
-                      {configured ? "Key configured" : "Key needed"}
+                      {demo
+                        ? "Sample only"
+                        : configured
+                          ? "Key configured"
+                          : "Key needed"}
                     </span>
                   </div>
                   <p>
@@ -1999,9 +2003,11 @@ export default function Workspace({
                     </button>
                   </div>
                   <div className="info-note">
-                    {configured
-                      ? "Resolve the roster and audience seeds, then fetch each audience/domain batch."
-                      : "The live integration needs a server-side QLOO_API_KEY. Configure it in account settings; this event still needs its own evidence batches."}
+                    {demo
+                      ? "This sample does not request server credentials or collect live evidence. Open your saved events to use Qloo."
+                      : configured
+                        ? "Resolve the roster and audience seeds, then fetch each audience/domain batch."
+                        : "The live integration needs a server-side QLOO_API_KEY. Configure it in account settings; this event still needs its own evidence batches."}
                   </div>
                   <h4>Evidence batches</h4>
                   {doc.brief.cohorts.map((co) => (
