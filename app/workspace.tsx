@@ -508,6 +508,8 @@ export default function Workspace({
     return () => {
       window.removeEventListener("keydown", close);
       document.body.style.overflow = priorOverflow;
+      if (drawer?.contains(document.activeElement))
+        document.querySelector<HTMLButtonElement>(".mobile-toggle")?.focus();
     };
   }, [mobile]);
   const [scenario, setScenario] = useState<Scenario>({

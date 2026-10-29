@@ -216,3 +216,12 @@ test("mobile drawer contains keyboard focus, prevents background scrolling and r
     screen.getByRole("button", { name: "Open navigation" }),
   );
 });
+
+test("dismissing the drawer by its close control restores focus to the opener", () => {
+  render(<Workspace demo />);
+  fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
+  fireEvent.click(screen.getByRole("button", { name: "Close navigation" }));
+  expect(document.activeElement).toBe(
+    screen.getByRole("button", { name: "Open navigation" }),
+  );
+});
