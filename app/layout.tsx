@@ -2,6 +2,7 @@ import SplashScreen from "@/components/mend/splash-screen";
 import AppFooter from "@/components/mend/app-footer";
 import EventAtmosphere from "@/components/mend/event-atmosphere";
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "./mend-desk.css";
 import "./event-atmosphere.css";
@@ -35,6 +36,7 @@ export default function RootLayout({
           <div className="mend-page-content">{children}</div>
           <AppFooter />
         </div>
+        <Analytics />
       </body>
     </html>
   );
