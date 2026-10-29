@@ -2494,3 +2494,56 @@ html {
     scroll-behavior: auto;
   }
 }
+
+/* Account identity remains readable and actionable on narrow drawers. */
+.sidebar .account {
+  color: inherit;
+  text-decoration: none;
+  width: 100%;
+  min-height: 64px;
+}
+.sidebar .account:hover {
+  background: #2e3b30;
+}
+.sidebar .account .avatar {
+  flex-shrink: 0;
+}
+.account-copy {
+  flex: 1;
+  min-width: 0;
+}
+.account-name,
+.account-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar .account > svg {
+  flex-shrink: 0;
+  color: var(--lime);
+}
+.organizer-profile {
+  margin-block: 16px 24px;
+}
+.profile-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.profile-heading > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.profile-heading small {
+  display: block;
+  margin-top: 4px;
+}
+.profile-heading .avatar {
+  flex-shrink: 0;
+  background: var(--green);
+  color: var(--lime);
+  width: 44px;
+  height: 44px;
+}

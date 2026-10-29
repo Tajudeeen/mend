@@ -45,7 +45,6 @@ All 39 native tests and 30 Vitest tests passed, with TypeScript and ESLint passi
 - Browser/mobile/keyboard/accessibility QA was unavailable in this authoring environment. No browser walkthrough or visual QA is claimed.
 - GitHub Actions is committed but its remote run must be checked after publication.
 
-
 ## Host and product acceptance pass, October 27, 2026
 
 - GitHub metadata confirms `Tajudeeen/mend` is public. Root MIT license and third-party notices remain present.
@@ -60,7 +59,6 @@ All 39 native tests and 30 Vitest tests passed, with TypeScript and ESLint passi
 
 These checks do not complete the live-Qloo, live-model, public-access, deployed-auth or real-organizer gates.
 
-
 ## Code correctness follow-up, October 27, 2026
 
 - Approved cancellations, closures, rain closures and budget changes now become current event facts. Subsequent repairs and restoration cannot silently revive a cancelled act or reopen a blocked zone. The incident remains in its approved proposal/report, while the event scenario returns to `none` so a deliberate later edit is respected.
@@ -73,7 +71,6 @@ These checks do not complete the live-Qloo, live-model, public-access, deployed-
 
 Live credentials, production authentication, browser/device QA and public judge access remain separate gates. This pass makes no claim that every possible defect has been eliminated.
 
-
 ## Independent preparation and report inspection, October 28, 2026
 
 - Added a six-step live-event preparation panel. It uses current planner coverage and constraints, shows missing audience/participant inputs and unconfirmed active-plan terms, and links to the relevant editor. Synthetic mode does not satisfy live evidence preparation.
@@ -83,7 +80,6 @@ Live credentials, production authentication, browser/device QA and public judge 
 - Tests cover current/stale cultural pools, blank events, unknown terms, report tampering and the local file UI. No live provider credential is required by these checks.
 
 Provider access and browser/device QA remain separate gates. The previous supported browser preview returned a connection refusal, so no browser/device verification is claimed by the component tests.
-
 
 ## Host alignment and repository cleanup, October 28, 2026
 
@@ -97,18 +93,15 @@ Added a read-only comparison of cultural and rules-only repairs. Both retain the
 
 Live Qloo/model repair, anonymous hosting access, deployed primary authentication/persistence, browser/device QA, organizer impact and Devpost confirmation remain unverified. This cleanup does not mark any of them complete.
 
-
 ## Vercel packaging follow-up, October 28, 2026
 
 The supplied Vercel log for `2ffccdc` passed compilation, TypeScript and page generation, then failed `NEXT_OUTPUT_DIR_MISSING`: the adapter searched `.next` while Next emitted `.next-node`. The repository now explicitly configures `vercel.json` `outputDirectory` as `.next-node`, and its repository check imports the actual Next config to prevent drift. `engines.node` is pinned to `24.x`. Local build success does not alone establish successful Vercel packaging; the next remote deployment must be checked.
-
 
 ## 2026-10-28: Vercel becomes the primary shared URL
 
 README, setup, host checklist and submission links now use `https://mend-deeencodes.vercel.app`. The former ChatGPT Site URL is removed from current entry points; compatibility source and dated evidence remain preserved. No saved data or identities were migrated.
 
 Production deployment `dpl_zZ6DuxJ4ehQKiFrwNrfoBeZTUyot` reached READY for commit `9f73a766e7a91eb192d1c4e487b6a1a740a8bbdd`. Authenticated deployment fetches returned HTTP 200 for `/demo` and `/api/health`. Health reported runtime `next-node`, Qloo/model unavailable and persistence/auth not configured. A separate unauthenticated HTTP request following redirects ended on Vercel login, not the sample. Deployment readiness does not yet prove anonymous judge access or a live organizer workflow.
-
 
 ## 2026-10-28: production authentication redirect and database connection
 
@@ -171,3 +164,13 @@ Deployment `dpl_2KjB1zUoP6sGYLPjG76Uma2rjwuN`, source `d12af770fa1d7d29d95592a4c
 All eleven local verification stages passed on the corresponding clean application tree: 68 native tests, 83 component/provider tests, repository/secret checks, types/lint, synthetic benchmark, both builds and the local Worker/D1 workflow. The synthetic benchmark had zero hard-constraint violations across its 20 cases/40 searches and remains synthetic. Browser inspection observed the desktop palette, active navigation, content focus, smooth scrolling and the real saved evidence view. The successful Qwen missing-input report and its model/provider/source identity remained present after readback. No existing organizer event was changed.
 
 This verifies the observed sign-in, create/mutation/readback, Qloo search/one Insights batch, source integrity after JSONB storage and bounded missing-information model workflow. It does not verify complete audience/domain coverage, a live proposal/approval/report with real confirmed terms, PostgreSQL cross-owner write isolation, mobile visual QA, organizer impact or final submission. The fixture event's operational facts remain clearly labelled examples and its booking terms remain unconfirmed.
+
+## 2026-10-29 — organizer identity and rollback-only storage verification
+
+The workspace account footer was a static, non-interactive “Organizer” label. It now links to Account & connections and displays authenticated profile name/initials and optional organization. The header avatar opens the same profile destination. The profile API reads the verified Supabase user, returns only display fields and email with private/no-store caching, and permits bounded name/organization edits only. User-editable metadata never controls ownership or authorization. Profile edits do not change event ownership, email, password, roles or booking confirmations. The ChatGPT compatibility deployment retains its separate host-managed identity.
+
+Added an authenticated, same-origin, rate-limited PostgreSQL isolation probe in account settings. It uses random test owners/record IDs and the configured runtime role without SET ROLE or permission changes. Its transaction checks the limited role and all 12 application tables' RLS flags, creates/reads/updates an isolated Event, checks another owner cannot read/update/delete it or read its AuditEvent, and contains an expected mismatched-owner INSERT rejection in a savepoint. The outer transaction always throws to roll back, then a separate transaction checks the test event is absent. No real organizer record is selected or targeted. A passing result proves only those exercised operations; it does not certify every child-table policy or two real browser identities. Fixed error responses omit database diagnostics and credentials. Local regression tests deliberately break read/write/insert/rollback behavior and require the probe to fail.
+
+The mobile drawer now focuses its close control, contains keyboard Tab navigation, makes the background inert, locks background scrolling and restores scrolling on dismissal. Component tests cover Escape and focus behavior. An actual phone viewport visual walkthrough remains separate from those component checks.
+
+Full deployment and observed production probe results for this revision are recorded below after execution. A complete live repair/approval/report still needs actual event structure, full Qloo coverage, confirmed organizer terms and explicit human approval. Real organizer impact and final host submission gates remain open.

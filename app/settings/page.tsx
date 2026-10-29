@@ -2,6 +2,8 @@
 
 import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
+import StorageCheck from "@/components/mend/storage-check";
+import { OrganizerProfileEditor } from "@/components/mend/organizer-account";
 import { useEffect, useState } from "react";
 import type { ConnectionResult } from "@/server/connections";
 export default function Settings() {
@@ -58,7 +60,8 @@ export default function Settings() {
       </section>
       <div className="evidence-grid">
         <section className="panel config-panel">
-          <h3>Your organizer account</h3>
+          <h3 id="organizer-profile">Your organizer account</h3>
+          {signedIn && <OrganizerProfileEditor />}
           {health.auth === "chatgpt-compatibility" ? (
             <>
               <p>
@@ -215,6 +218,9 @@ export default function Settings() {
             </p>
           )}
         </section>
+        <StorageCheck
+          enabled={signedIn && health.auth !== "chatgpt-compatibility"}
+        />
         <section className="panel config-panel">
           <h3>Service status</h3>
           {[

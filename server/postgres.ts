@@ -297,3 +297,136 @@ export async function operationResult(owner: string, key: string) {
     return row ? (row.result as unknown as EventDoc) : null;
   });
 }
+
+// This probe deliberately never commits. Random owners and record IDs keep it
+// isolated from organizer data, even if an RLS policy is broken.
+export async function verifyPostgresIsolation() {
+  const ownerA = crypto.randomUUID(),
+    ownerB = crypto.randomUUID();
+  const id = crypto.randomUUID(),
+    auditId = crypto.randomUUID();
+  const checks: string[] = [];
+  class ProbeRollback extends Error {}
+  const ensure = (ok: boolean, label: string) => {
+    if (!ok) throw new Error("Storage isolation check failed.");
+    checks.push(label);
+  };
+  try {
+    await withOwner(ownerA, async (tx) => {
+      const roles = await tx.$queryRaw<
+        { rolsuper: boolean; rolbypassrls: boolean }[]
+      >`
+        SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user`;
+      ensure(
+        roles.length === 1 && !roles[0].rolsuper && !roles[0].rolbypassrls,
+        "Limited runtime role",
+      );
+      const tables = await tx.$queryRaw<
+        { relname: string; relrowsecurity: boolean }[]
+      >`
+        SELECT relname, relrowsecurity FROM pg_class JOIN pg_namespace ON pg_namespace.oid = relnamespace
+        WHERE nspname = 'public' AND relname IN ('Event','Participant','VendorOffering','Zone','LineupSlot','PlanRevision','Assignment','EvidenceRecord','RecoveryRun','RecoveryReport','AuditEvent','OperationKey')`;
+      ensure(
+        tables.length === 12 && tables.every((t) => t.relrowsecurity),
+        "RLS enabled on all 12 application tables",
+      );
+      await tx.event.create({
+        data: {
+          id,
+          owner: ownerA,
+          name: "Rollback-only storage probe",
+          document: { probe: true },
+        },
+      });
+      await tx.auditEvent.create({
+        data: {
+          id: auditId,
+          eventId: id,
+          owner: ownerA,
+          revision: 0,
+          action: "storage.probe",
+          detail: "Never committed",
+        },
+      });
+      ensure(
+        !!(await tx.event.findUnique({ where: { id } })),
+        "Owner can create and read a test event",
+      );
+      const ownWrite = await tx.event.updateMany({
+        where: { id },
+        data: { name: "Owner write confirmed" },
+      });
+      ensure(ownWrite.count === 1, "Owner can update a test event");
+      await tx.$queryRaw`SELECT set_config('request.jwt.claim.sub', ${ownerB}, true)`;
+      ensure(
+        !(await tx.event.findUnique({ where: { id } })),
+        "Other owner cannot read the test event",
+      );
+      ensure(
+        (await tx.auditEvent.findMany({ where: { id: auditId } })).length === 0,
+        "Other owner cannot read its audit record",
+      );
+      ensure(
+        (
+          await tx.event.updateMany({
+            where: { id },
+            data: { name: "Must not change" },
+          })
+        ).count === 0,
+        "Other owner cannot update the test event",
+      );
+      ensure(
+        (await tx.event.deleteMany({ where: { id } })).count === 0,
+        "Other owner cannot delete the test event",
+      );
+      // A denied INSERT aborts a PostgreSQL transaction; contain it in a savepoint
+      // so we can distinguish the expected RLS rejection from unrelated errors.
+      await tx.$executeRawUnsafe("SAVEPOINT mend_probe_insert");
+      let denied = false;
+      try {
+        await tx.event.create({
+          data: {
+            id: crypto.randomUUID(),
+            owner: ownerA,
+            name: "Must not insert",
+            document: {},
+          },
+        });
+      } catch (error) {
+        const e = error as {
+          meta?: { driverAdapterError?: { cause?: { originalCode?: string } } };
+          message?: string;
+        };
+        denied =
+          e.meta?.driverAdapterError?.cause?.originalCode === "42501" ||
+          /row.level security/i.test(e.message ?? "");
+      }
+      await tx.$executeRawUnsafe("ROLLBACK TO SAVEPOINT mend_probe_insert");
+      ensure(denied, "Other owner cannot insert an event for the first owner");
+      await tx.$queryRaw`SELECT set_config('request.jwt.claim.sub', ${ownerA}, true)`;
+      const preserved = await tx.event.findUnique({ where: { id } });
+      ensure(
+        preserved?.name === "Owner write confirmed",
+        "Original test record remains unchanged",
+      );
+      throw new ProbeRollback();
+    });
+    throw new Error("Storage probe unexpectedly committed.");
+  } catch (error) {
+    if (!(error instanceof ProbeRollback))
+      throw new Error(
+        "Storage isolation check failed. No organizer records were targeted.",
+      );
+  }
+  const remaining = await withOwner(ownerA, (tx) =>
+    tx.event.findUnique({ where: { id } }),
+  );
+  ensure(remaining === null, "Rollback confirmed by a separate database read");
+  return {
+    status: "passed" as const,
+    checkedAt: new Date().toISOString(),
+    checks,
+    limitation:
+      "Tests isolated Event writes and AuditEvent reads through the production database role. It does not test every table policy, two real browser sessions, Qloo, model recovery or organizer impact.",
+  };
+}

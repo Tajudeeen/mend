@@ -2,6 +2,10 @@
 
 import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
+import OrganizerAccount, {
+  useOrganizerProfile,
+  organizerInitials,
+} from "@/components/mend/organizer-account";
 import ReadinessPanel from "@/components/mend/readiness-panel";
 import ProductionDesk from "@/components/mend/production-desk";
 import CulturalFingerprint from "@/components/mend/cultural-fingerprint";
@@ -430,6 +434,7 @@ export default function Workspace({
   eventId?: string;
   initialView?: string;
 }) {
+  const organizer = useOrganizerProfile(!demo);
   const navigationFrame = useRef<number | null>(null);
   const loadRequest = useRef(0);
   useEffect(
@@ -471,14 +476,39 @@ export default function Workspace({
   const closeResolver = useCallback(() => setResolver(null), []);
   useEffect(() => {
     if (!mobile) return;
+    const drawer = document.getElementById("workspace-navigation");
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawer?.querySelector<HTMLButtonElement>(".desk-nav-close")?.focus();
     const close = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMobile(false);
         document.querySelector<HTMLButtonElement>(".mobile-toggle")?.focus();
       }
+      if (event.key === "Tab") {
+        const items = Array.from(
+          drawer?.querySelectorAll<HTMLElement>(
+            "a[href], button:not([disabled])",
+          ) || [],
+        ).filter(
+          (element) => window.getComputedStyle(element).display !== "none",
+        );
+        const first = items[0],
+          last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
     };
     window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+    return () => {
+      window.removeEventListener("keydown", close);
+      document.body.style.overflow = priorOverflow;
+    };
   }, [mobile]);
   const [scenario, setScenario] = useState<Scenario>({
       type: "cancellation",
@@ -809,6 +839,9 @@ export default function Workspace({
       )}
       <aside
         id="workspace-navigation"
+        role={mobile ? "dialog" : undefined}
+        aria-modal={mobile || undefined}
+        aria-label={mobile ? "Workspace navigation" : undefined}
         className={"sidebar " + (mobile ? "open" : "")}
       >
         <Link href="/" className="brand" aria-label="MEND home">
@@ -884,19 +917,10 @@ export default function Workspace({
               Review every change before it reaches the active plan.
             </small>
           </div>
-          <div className="account">
-            <span className="avatar">{demo ? "D" : "M"}</span>
-            <span>
-              {demo ? "Demo visitor" : "Organizer"}
-              <small>
-                {demo ? "No account required" : "Your private events"}
-              </small>
-            </span>
-            <span className="online" />
-          </div>
+          <OrganizerAccount demo={demo} {...organizer} />
         </div>
       </aside>
-      <div className="main-shell">
+      <div className="main-shell" inert={mobile}>
         <header className="topbar">
           <div className="breadcrumb">
             <button
@@ -920,11 +944,17 @@ export default function Workspace({
               {doc.mode === "demo" ? "Synthetic sample" : "Live event"}
             </span>
             <Link
-              href="/settings"
+              href="/settings#organizer-profile"
               className="top-avatar"
-              aria-label="Organizer settings"
+              aria-label="Organizer profile and account settings"
             >
-              M
+              {demo
+                ? "D"
+                : organizer.profile
+                  ? organizerInitials(
+                      organizer.profile.displayName || organizer.profile.email,
+                    )
+                  : "?"}
             </Link>
           </div>
         </header>

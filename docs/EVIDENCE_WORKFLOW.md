@@ -24,3 +24,9 @@ Sample interaction logs are labelled as sample activity. Saved synthetic events 
 Workspace navigation updates the URL, marks the active section, moves focus to the content and scrolls to the top. Reduced-motion preferences use immediate scrolling. The mobile menu closes on selection, backdrop click or Escape. Full page links retain document navigation across the hosting/auth boundary. Operational states reuse the existing paper, ink, green, lime and rust palette.
 
 Regression tests cover failed live loads, no synthetic substitution, server readback, empty live evidence, disabled sample live controls, source/derived-value tampering, stale context, duplicate receipts, keyboard focus and reduced-motion scrolling. `pnpm verify` additionally runs both runtime builds and the local Worker/D1 workflow. Local tests do not establish a complete production Supabase/Qloo/model recovery; record that separately with actual event evidence and the deployed source revision.
+
+### Organizer identity and storage isolation
+
+Select the organizer area at the bottom of the sidebar, or the header initials, to open **Account & connections**. The organizer name and optional organization are editable display details; the account email is read-only. These details do not establish organization identity or booking facts and never affect event ownership.
+
+Signed-in users on the PostgreSQL deployment can select **Check storage isolation**. The check creates random isolated test records inside a transaction, exercises owner writes and cross-owner denial, rolls the transaction back, and confirms absence with a second database read. The dated result lists the precise checks and their limits. It does not change permissions or inspect your event contents. The Worker/D1 target uses its separate automated workflow checks. This check is additional database evidence, not proof of a complete Qloo/model recovery or a review of every RLS policy.

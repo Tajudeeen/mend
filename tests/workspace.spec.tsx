@@ -25,7 +25,7 @@ test("a failed live load never shows the sample or allows sample repair actions"
     "fetch",
     vi
       .fn()
-      .mockResolvedValue(
+      .mockImplementation(async () =>
         Response.json(
           { error: "Sign in to load this event." },
           { status: 401 },
@@ -191,4 +191,28 @@ test("public sample offers individual closure and organizer-controlled venue edi
   expect(screen.getByText("Move the pieces, keep the promises.")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Zoom in" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Save zone" })).toBeTruthy();
+});
+
+test("mobile drawer contains keyboard focus, prevents background scrolling and restores it on Escape", () => {
+  render(<Workspace demo />);
+  fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
+  expect(
+    screen.getByRole("dialog", { name: "Workspace navigation" }),
+  ).toBeTruthy();
+  expect(document.activeElement).toBe(
+    screen.getByRole("button", { name: "Close navigation" }),
+  );
+  expect(document.body.style.overflow).toBe("hidden");
+  const account = screen.getByRole("link", {
+    name: "Sign in or create an organizer account",
+  });
+  account.focus();
+  fireEvent.keyDown(window, { key: "Tab" });
+  expect(document.activeElement?.getAttribute("aria-label")).toBe("MEND home");
+  fireEvent.keyDown(window, { key: "Escape" });
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(document.body.style.overflow).toBe("");
+  expect(document.activeElement).toBe(
+    screen.getByRole("button", { name: "Open navigation" }),
+  );
 });
