@@ -1788,14 +1788,27 @@ export default function Workspace({
                           </h3>
                           <div className="option-metrics">
                             <span>
-                              <small>Fee budget</small>
-                              <b>{money(o.metrics.cost)}</b>
+                              <small>
+                                {o.metrics.unknowns.some((s) =>
+                                  s.endsWith("fee unknown"),
+                                )
+                                  ? "Known fee subtotal"
+                                  : "Fee budget"}
+                              </small>
+                              <b>
+                                {money(o.metrics.cost)}
+                                {o.metrics.unknowns.some((s) =>
+                                  s.endsWith("fee unknown"),
+                                )
+                                  ? "+"
+                                  : ""}
+                              </b>
                               <em>
-                                {money(
-                                  effective(doc, p.scenario).budget -
-                                    o.metrics.cost,
-                                )}{" "}
-                                headroom
+                                {o.metrics.unknowns.some((s) =>
+                                  s.endsWith("fee unknown"),
+                                )
+                                  ? "Final total unknown"
+                                  : `${money(effective(doc, p.scenario).budget - o.metrics.cost)} headroom`}
                               </em>
                             </span>
                             <span>

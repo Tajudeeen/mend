@@ -263,6 +263,7 @@ export type AgentStep = {
   at: string;
 };
 export type AgentRun = {
+  summarySource?: "event-records-v1";
   id: string;
   configuration?: {
     providerOrigin: string;

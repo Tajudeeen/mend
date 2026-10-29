@@ -123,8 +123,9 @@ export default function AgentPanel({
           ))}
           {run.explanation?.length ? (
             <p className="fineprint">
-              Model explanation. Check its statements against the structured
-              results above.
+              {run.summarySource === "event-records-v1"
+                ? "Recorded workflow summary. Operational facts come from the saved event and deterministic checks."
+                : "Historical model explanation. It was not verified against the current event records."}
             </p>
           ) : null}
           {run.explanation?.map((c, i) => (

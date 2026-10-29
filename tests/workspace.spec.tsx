@@ -11,6 +11,7 @@ import {
 import Workspace from "../app/workspace";
 import { sampleEvent } from "../lib/seed";
 import { newEvent } from "../lib/new-event";
+import { propose } from "../lib/planner";
 beforeEach(() => {
   history.replaceState({}, "", "/");
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
@@ -244,4 +245,28 @@ test("an empty saved site does not claim five fictional spaces or sample capacit
   expect(
     screen.getByText(/Site capacities are organizer-supplied/),
   ).toBeTruthy();
+});
+
+test("conditional unknown fees never display a final total or numeric budget headroom", async () => {
+  const doc = sampleEvent();
+  doc.candidates.forEach((c) => {
+    c.feeKnown = false;
+  });
+  doc.proposal = propose(doc, { type: "none" });
+  doc.revision++;
+  doc.mode = "live";
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url) =>
+      String(url).includes("?id=")
+        ? Response.json({ event: doc, audit: [], qlooConfigured: true })
+        : Response.json({ events: [] }),
+    ),
+  );
+  render(<Workspace eventId={doc.id} initialView="repair" />);
+  expect(
+    (await screen.findAllByText("Known fee subtotal")).length,
+  ).toBeGreaterThan(0);
+  expect(screen.getAllByText("Final total unknown").length).toBeGreaterThan(0);
+  expect(screen.queryByText(/headroom/)).toBeNull();
 });

@@ -349,7 +349,7 @@ test("Groq full planning reuses checked live receipts and stages one option thro
         claims: [
           {
             kind: "operational",
-            text: "A conditional proposal is ready for human review.",
+            text: "No Qloo evidence IDs are stored and bookings are confirmed.",
             evidenceIds: [],
           },
         ],
@@ -389,6 +389,14 @@ test("Groq full planning reuses checked live receipts and stages one option thro
     LLM_MODEL: "qwen/qwen3.8-27b",
   });
   expect(result.run.state).toBe("awaiting_approval");
+  expect(
+    result.run.explanation?.some((claim) =>
+      claim.text.includes("6 stored Qloo source receipts"),
+    ),
+  ).toBe(true);
+  expect(JSON.stringify(result.run.explanation)).not.toContain(
+    "bookings are confirmed",
+  );
   expect(fetcher).toHaveBeenCalledTimes(4);
   expect(
     result.run.steps.filter((s) => s.trigger === "server").map((s) => s.tool),

@@ -475,10 +475,48 @@ export async function investigate(
       out.status === "awaiting_approval"
         ? "awaiting_approval"
         : "needs_information";
-    run.explanation = claims.map((c) => ({
-      text: c.text,
-      evidenceIds: c.evidenceIds,
-    }));
+    // Free-form operational narration can contradict the tool records even
+    // when its JSON is valid. Display facts computed from the resulting event.
+    run.summarySource = "event-records-v1";
+    const missing = eventReadiness(doc)
+      .checks.filter((check) => !check.done)
+      .map((check) => check.label);
+    const option = doc.proposal?.options[0];
+    run.explanation = [
+      {
+        text: `Read event revision ${before.revision}. Active assignments unchanged.`,
+        evidenceIds: [],
+      },
+      {
+        text: `${doc.evidence.length} stored Qloo source receipts. Stored preferences do not confirm bookings.`,
+        evidenceIds: doc.evidence.map((receipt) => receipt.id),
+      },
+      {
+        text: doc.proposal
+          ? `${doc.proposal.options.length} proposed options recorded for human review. ${option?.conditional ? "Approval remains blocked by unknown terms or evidence." : "Any application still requires explicit organizer approval."}`
+          : "No proposal was retained from this investigation.",
+        evidenceIds: [],
+      },
+      ...(option?.metrics.unknowns.length
+        ? [
+            {
+              text: `First option, unconfirmed information: ${option.metrics.unknowns.join("; ")}.`,
+              evidenceIds: [],
+            },
+          ]
+        : []),
+      ...(missing.length
+        ? [
+            {
+              text: `Preparation still needed: ${missing.join("; ")}.`,
+              evidenceIds: [],
+            },
+          ]
+        : []),
+      ...claims
+        .filter((claim) => claim.kind === "cultural")
+        .map((claim) => ({ text: claim.text, evidenceIds: claim.evidenceIds })),
+    ];
     if (doc.proposal) doc.proposal.baseRevision = before.revision;
   } catch (error) {
     run.state = "failed";

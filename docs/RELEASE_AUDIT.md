@@ -22,3 +22,9 @@ The phone review uses a narrow iframe's actual CSS viewport. It does not establi
 ## Adversarial checks
 
 The existing suite exercises stale writes, duplicate request keys, owner isolation, origin/body bounds, unavailable keys/providers, model protocol and tool budgets, approval bypass attempts, unknown terms, locks, incident chaining, search truncation, source/score tampering and JSONB key reordering. New tests add omitted booking confirmations, unfinished-study retention, invalid completed assignments, duplicate sessions and exclusion of automation from organizer impact counts. A passing suite is bounded evidence, not proof that no bug can exist.
+
+## Observed outcomes
+
+The current deployed test reached a real Qloo-backed conditional proposal and human-review preparation. Approval correctly stayed disabled for unknown booking terms. Source `4ca358c6e221` retains that observation; the verification log records the two preceding failures and the operational-summary defect found during the successful run. Summaries now derive from event records. Narrow CSS viewport testing found and fixed the obstructed drawer close control and cramped form/actions. The sample reached its report screen. Browser download capture remained unavailable, so the complete report JSON is inspectable in-page. An automated abandoned-trial check retained the rejected attempt and stayed excluded from organizer impact.
+
+No real organizer impact, actual booking confirmation, human production approval or every-device/every-policy guarantee follows from these checks. The remaining work is recorded explicitly rather than converted into a passing status.
