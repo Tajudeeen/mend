@@ -245,3 +245,49 @@ test("Groq keys are refused on OpenAI and Groq options do not leak into other pr
   ).toEqual({});
   expect(modelCallOptions({ ...env, LLM_MODEL: "another-model" })).toEqual({});
 });
+
+test("Qwen uses Groq's documented non-thinking sequential tool protocol", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url, options) => {
+      const body = JSON.parse(String(options.body));
+      expect(body.reasoning_effort).toBe("none");
+      expect(body.parallel_tool_calls).toBe(false);
+      expect(body.temperature).toBe(0);
+      const nonce = JSON.stringify(body.messages).match(
+        /[0-9a-f]{8}-[0-9a-f-]{27}/,
+      )?.[0];
+      return Response.json({
+        id: "qwen-protocol",
+        object: "chat.completion",
+        created: 1,
+        model: "qwen/qwen3.8-27b",
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: null,
+              tool_calls: [
+                {
+                  id: "probe",
+                  type: "function",
+                  function: {
+                    name: "confirm_connection",
+                    arguments: JSON.stringify({ nonce }),
+                  },
+                },
+              ],
+            },
+            finish_reason: "tool_calls",
+          },
+        ],
+        usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 },
+      });
+    }),
+  );
+  expect(
+    (await checkConnections({ ...env, LLM_MODEL: "qwen/qwen3.8-27b" })).model
+      .state,
+  ).toBe("passed");
+});

@@ -1,6 +1,6 @@
 # MEND submission draft
 
-This is an engineering draft, not a submitted entry. Complete the open gates in `HOST_REQUIREMENTS.md` before describing the application as live Qloo-powered.
+This is an engineering draft, not a submitted entry. Use the exact verified scope below and complete the open gates in `HOST_REQUIREMENTS.md` before claiming a completed real-event recovery.
 
 ## Product description
 
@@ -23,6 +23,10 @@ Vercel replaces the former ChatGPT Site as the submission destination. Anonymous
 
 Open the sample, withdraw the opening act, inspect alternatives, approve and inspect the Recovery reports. The sample is fictional, browser-local and uses synthetic preferences. Live events require configured server services and authenticated persistence.
 
+## Verified integration scope, October 29
+
+The signed-in controlled verification event reached a live Qloo-backed conditional artist proposal and human-review preparation with Groq Qwen. Three audience-specific source batches passed stored-body, derived-affinity and context checks after PostgreSQL reload. Four model-requested operations and three deterministic server checks were distinguished in the trace. Approval stayed disabled for unknown fees and availability. The event inputs were explicitly illustrative, not actual bookings. The [verification log](VERIFICATION.md) preserves both preceding failed runs and this observed result. The [release audit](RELEASE_AUDIT.md) records phone-width and failure-path checks and their limits.
+
 ## Evidence still needed
 
-Insert the actual live Qloo request/result references, live model run, approved report and reload evidence after verification. Record organizer feedback only when collected. Current synthetic tests demonstrate software behavior, not real-world benefit. Do not describe mocked responses as live Qloo evidence.
+Live Qloo and conditional model-run references are in the verification log. Add an approved real-event report and reload evidence only after confirmed facts and explicit human approval. Record organizer feedback only when collected. Current synthetic tests demonstrate software behavior, not real-world benefit. Do not describe mocked responses as live Qloo evidence.

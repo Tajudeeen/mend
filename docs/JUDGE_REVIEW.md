@@ -1,5 +1,7 @@
 # Participant and judge review: October 28, 2026
 
+Historical review. For October 29 live integration observations, fixes and remaining gates, see [the release audit](RELEASE_AUDIT.md) and [verification log](VERIFICATION.md).
+
 This is an internal assessment against the host's published criteria, not an official judging result or a prediction of a win. Preserve the mandatory gates in [Host requirements](HOST_REQUIREMENTS.md). Each criterion below has equal weight; technical implementation is the first tiebreak. The video is optional.
 
 | Criterion                         | Strongest existing case                                                                                   | Most valuable improvement                                                                                                                                                                                                                        |

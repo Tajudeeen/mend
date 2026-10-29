@@ -35,3 +35,5 @@ The comparison export includes organizer event inputs and receipts. Review its c
 ## Proof boundaries
 
 Stored-response hashes establish consistency with the exported body. They do not authenticate Qloo as issuer. Offline reproduction establishes this planner's behavior for supplied inputs. Local verification establishes the checks listed in its generated report. None establishes live access, confirmed bookings, anonymous deployment access, organizer impact or a completed Devpost submission.
+
+Current engineering evidence: [October 29 release audit](RELEASE_AUDIT.md), [dated verification](VERIFICATION.md), [phone layout bench](https://usemend.vercel.app/review/phone), and [organizer measurement protocol](ORGANIZER_STUDY.md).

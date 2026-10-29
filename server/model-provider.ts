@@ -34,6 +34,13 @@ export function configuredModel(env: RuntimeEnv) {
       // Preserve the actual content, tool calls and tool results unchanged.
       if (base.hostname === "api.groq.com" && typeof body === "string") {
         const request = JSON.parse(body);
+        if (env.LLM_MODEL === "qwen/qwen3.8-27b") {
+          // Groq documents non-thinking Qwen tool calls and sequential mode.
+          // Keep protocol generation deterministic without weakening validation.
+          request.reasoning_effort = "none";
+          request.parallel_tool_calls = false;
+          request.temperature = 0;
+        }
         if (Array.isArray(request.messages)) {
           request.messages = request.messages.map(
             (message: Record<string, unknown>) => {
