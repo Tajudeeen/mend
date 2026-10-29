@@ -70,3 +70,7 @@ The [host checklist](docs/HOST_REQUIREMENTS.md) preserves working Qloo-integrate
 The [submission draft](docs/SUBMISSION.md) must be finalized with actual live evidence and anonymous access checks. A local green build does not close those gates.
 
 MIT licensed. Retained [font notices](docs/FONT_LICENSE.txt) and [Sites build notices](build/sites-vite-plugin.LICENSE) remain applicable. Unused starter UI components and dependencies have been removed; product code, required assets, host records and historical evidence are retained.
+
+## Reliability follow-up
+
+See [current limitations](LIMITATIONS.md), [external evaluation and staging probes](docs/EXTERNAL_VERIFICATION.md), and the [runtime decision](docs/adr/0001-runtime-boundaries.md). `pnpm eval:live` is opt-in and uses real model quota; `pnpm test:staging` requires an isolated deployment and two dedicated accounts. Neither has a passing external result merely because the harness exists.

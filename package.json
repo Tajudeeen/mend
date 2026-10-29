@@ -26,7 +26,10 @@
     "verify:report": "node --experimental-strip-types scripts/verify-report.ts",
     "check:repo": "node scripts/check-repo.mjs",
     "verify": "node scripts/verify-project.mjs",
-    "reproduce:comparison": "node --experimental-strip-types scripts/reproduce-comparison.ts"
+    "reproduce:comparison": "node --experimental-strip-types scripts/reproduce-comparison.ts",
+    "eval:live": "vitest run --config vitest.live.config.ts",
+    "test:staging": "playwright test --config playwright.staging.config.ts",
+    "verify:fast": "pnpm db:generate:postgres && pnpm typecheck && pnpm lint && pnpm test:ui"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.67",

@@ -1,0 +1,74 @@
+name: MEND external verification
+on:
+  workflow_dispatch:
+    inputs:
+      live_model:
+        description: Run 50 real model cases (uses API quota)
+        type: boolean
+        default: false
+      staged_auth:
+        description: Run against a preconfigured disposable staging deployment
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  live-model:
+    if: inputs.live_model
+    runs-on: ubuntu-latest
+    environment: live-evaluation
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm eval:live
+        env:
+          MEND_RUN_LIVE_EVAL: '1'
+          MEND_EVAL_CASES: '50'
+          MEND_EVAL_FLOOR: '0.9'
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          MEND_EVAL_INPUT_USD_PER_MILLION: ${{ vars.MEND_EVAL_INPUT_USD_PER_MILLION }}
+          MEND_EVAL_OUTPUT_USD_PER_MILLION: ${{ vars.MEND_EVAL_OUTPUT_USD_PER_MILLION }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: mend-live-model-evaluation
+          path: outputs/live-eval.json
+          if-no-files-found: warn
+  staged-auth:
+    if: inputs.staged_auth
+    runs-on: ubuntu-latest
+    environment: staging-verification
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:staging
+        env:
+          MEND_E2E_DISPOSABLE: '1'
+          MEND_E2E_ORIGIN: ${{ vars.MEND_E2E_ORIGIN }}
+          MEND_E2E_EMAIL_A: ${{ secrets.MEND_E2E_EMAIL_A }}
+          MEND_E2E_PASSWORD_A: ${{ secrets.MEND_E2E_PASSWORD_A }}
+          MEND_E2E_EMAIL_B: ${{ secrets.MEND_E2E_EMAIL_B }}
+          MEND_E2E_PASSWORD_B: ${{ secrets.MEND_E2E_PASSWORD_B }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: mend-staging-authenticated-probe
+          path: outputs/staging-e2e.json
+          if-no-files-found: warn
