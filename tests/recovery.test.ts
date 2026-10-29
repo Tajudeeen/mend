@@ -221,3 +221,20 @@ test("tiny candidate optimization agrees with independent exhaustive enumeration
   assert.equal(p.truncated, false);
   assert(Math.abs(p.options[0].objective - best) < 1e-12);
 });
+
+test("live approval requires explicit confirmations even when old records omit flags", () => {
+  const d = sampleEvent();
+  const proposal = propose(d, { type: "none" });
+  d.proposal = proposal;
+  d.revision++;
+  d.mode = "live";
+  for (const c of d.candidates) {
+    delete c.feeKnown;
+    delete c.availabilityKnown;
+    delete (c as Partial<typeof c>).verified;
+  }
+  const unknowns = metrics(d, proposal.options[0].assignments).unknowns;
+  assert(unknowns.some((v) => v.includes("fee unknown")));
+  assert(unknowns.some((v) => v.includes("terms unconfirmed")));
+  assert.throws(() => approve(d, proposal.options[0].id), /Confirm unknown/);
+});

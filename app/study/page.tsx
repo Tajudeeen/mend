@@ -3,25 +3,22 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Download, Play } from "lucide-react";
 import Link from "@/components/mend/page-link";
 import MendMark from "@/components/mend/mark";
-import { sampleEvent } from "@/lib/seed";
+import {
+  organizerStudyFixture,
+  studyFixture,
+  type StudyTrial,
+} from "@/lib/organizer-study";
 import { propose, validate } from "@/lib/planner";
 import type { Assignment, Option } from "@/lib/model";
 
 type Method = "manual" | "mend";
-type Trial = {
-  method: Method;
-  startedAt: string;
-  finishedAt: string;
-  elapsedMs: number;
-  attempts: { at: string; violations: string[] }[];
-  assignments: Assignment[];
-};
-const fixture = () => {
-  const d = sampleEvent("00000000-0000-4000-8000-000000000002");
-  d.locks = d.slots.filter((s) => s.id !== "opening").map((s) => s.id);
-  return d;
-};
+type Trial = StudyTrial;
+const fixture = organizerStudyFixture;
 export default function Study() {
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const [participantKind, setParticipantKind] = useState<
+    "organizer" | "builder" | "automated"
+  >("builder");
   const [order, setOrder] = useState<Method[]>(["manual", "mend"]),
     [active, setActive] = useState(false),
     [elapsed, setElapsed] = useState(0),
@@ -62,6 +59,7 @@ export default function Study() {
     setElapsed(time);
     const completed: Trial = {
       method,
+      status: "completed",
       startedAt: clock.current.startedAt,
       finishedAt: finished.at,
       elapsedMs: Math.round(time),
@@ -89,8 +87,9 @@ export default function Study() {
           <h1>Put the workflow on the clock.</h1>
           <p>
             Run the same cancellation task manually and with MEND. Times come
-            from your interaction. Results stay in this browser until you
-            download them.
+            from your interaction. Results stay in memory until you download
+            them. Reloading clears unsaved records. You can export an unfinished
+            trial.
           </p>
         </div>
       </section>
@@ -148,6 +147,19 @@ export default function Study() {
                 onChange={(e) => setParticipant(e.target.value)}
                 placeholder="For example, organizer-01"
               />
+            </label>
+            <label className="field">
+              Participant role
+              <select
+                value={participantKind}
+                onChange={(e) =>
+                  setParticipantKind(e.target.value as typeof participantKind)
+                }
+              >
+                <option value="builder">Builder testing the tool</option>
+                <option value="organizer">Event organizer</option>
+                <option value="automated">Automated test</option>
+              </select>
             </label>
             <label className="field">
               Trial order
@@ -312,6 +324,36 @@ export default function Study() {
               ))}
             </>
           )}
+          {active && (
+            <button
+              className="btn quiet"
+              onClick={(event) => {
+                if (!clock.current) return;
+                const stoppedClock = clock.current;
+                setTrials((rows) => [
+                  ...rows,
+                  {
+                    method,
+                    status: "abandoned",
+                    startedAt: stoppedClock.startedAt,
+                    finishedAt: new Date().toISOString(),
+                    elapsedMs: Math.max(
+                      0,
+                      Math.round(event.timeStamp - stoppedClock.start),
+                    ),
+                    attempts: [...stoppedClock.attempts],
+                    assignments: [],
+                  },
+                ]);
+                clock.current = null;
+                setActive(false);
+                setOptions([]);
+                setErrors([]);
+              }}
+            >
+              Stop this trial and record it as unfinished
+            </button>
+          )}
           {errors.length > 0 && (
             <div className="alert error" role="alert">
               {errors.join(" ")} The timer continues until a valid repair is
@@ -321,7 +363,7 @@ export default function Study() {
         </section>
       ) : (
         <section className="panel config-panel">
-          <span className="eyebrow">PAIRED TRIAL COMPLETE</span>
+          <span className="eyebrow">BOTH TRIALS RECORDED</span>
           <h2>Keep the raw result.</h2>
           <p>
             One paired test cannot establish an average benefit. Recruit
@@ -329,7 +371,7 @@ export default function Study() {
           </p>
         </section>
       )}
-      {trials.length > 0 && (
+      {(trials.length > 0 || active) && (
         <section className="panel config-panel">
           <h3>Recorded trials</h3>
           {trials.map((t) => (
@@ -337,7 +379,9 @@ export default function Study() {
               <strong>
                 {t.method === "manual" ? "Manual" : "MEND-assisted"}
               </strong>
-              <span>{(t.elapsedMs / 1000).toFixed(1)} seconds</span>
+              <span>
+                {t.status} · {(t.elapsedMs / 1000).toFixed(1)} seconds
+              </span>
               <small>
                 {t.attempts.length} submission attempts /{" "}
                 {t.attempts.filter((a) => a.violations.length).length} failed
@@ -349,12 +393,36 @@ export default function Study() {
             className="btn quiet"
             onClick={() => {
               const data = {
-                schema: "mend-organizer-trial-v1",
+                schema: "mend-organizer-trial-v2",
+                sessionId,
+                participantKind,
+                consent,
                 participant: participant.trim() || "anonymous",
-                fixture: "synthetic-cancellation-locked-rest-v1",
+                fixture: studyFixture,
                 order,
-                trials,
-                completed: trials.length === 2,
+                trials:
+                  active && clock.current
+                    ? [
+                        ...trials,
+                        {
+                          method,
+                          status: "in_progress",
+                          startedAt: clock.current.startedAt,
+                          finishedAt: new Date().toISOString(),
+                          elapsedMs: Math.max(
+                            0,
+                            Math.round(
+                              performance.now() - clock.current.displayStart,
+                            ),
+                          ),
+                          attempts: [...clock.current.attempts],
+                          assignments: [],
+                        },
+                      ]
+                    : trials,
+                completed:
+                  trials.length === 2 &&
+                  trials.every((t) => t.status === "completed"),
                 limitations: [
                   "Self-run local measurement; not independently verified.",
                   "Synthetic task, no live Qloo or language model.",

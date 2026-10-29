@@ -63,8 +63,8 @@ export function eventReadiness(doc: EventDoc) {
         active.every(
           (c) =>
             c &&
-            c.feeKnown !== false &&
-            c.availabilityKnown !== false &&
+            c.feeKnown === true &&
+            c.availabilityKnown === true &&
             c.verified === true,
         ),
     },

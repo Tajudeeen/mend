@@ -225,3 +225,21 @@ test("dismissing the drawer by its close control restores focus to the opener", 
     screen.getByRole("button", { name: "Open navigation" }),
   );
 });
+
+test("an empty saved site does not claim five fictional spaces or sample capacities", async () => {
+  const doc = newEvent(sampleEvent().brief);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url) =>
+      String(url).includes("?id=")
+        ? Response.json({ event: doc, audit: [], qlooConfigured: true })
+        : Response.json({ events: [] }),
+    ),
+  );
+  render(<Workspace eventId={doc.id} initialView="site" />);
+  expect(await screen.findByText("0 spaces. One gathering.")).toBeTruthy();
+  expect(screen.queryByText(/Five spaces/)).toBeNull();
+  expect(
+    screen.getByText(/Site capacities are organizer-supplied/),
+  ).toBeTruthy();
+});

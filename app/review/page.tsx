@@ -68,6 +68,11 @@ export default function Review() {
         <section className="panel config-panel">
           <h2>Challenge the result</h2>
           <p>
+            <Link href="/review/phone">
+              Inspect phone-width layouts and navigation
+            </Link>
+          </p>
+          <p>
             Lock the opening performer, then simulate that performer cancelling.
             MEND must explain the conflict rather than silently break the lock.
             Unknown live booking terms must block approval until confirmed.

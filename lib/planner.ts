@@ -199,9 +199,17 @@ function measure(doc: EventDoc, plan: Assignment[], rank: RankLookup): Metrics {
   }
   for (const a of plan) {
     const c = doc.candidates.find((c) => c.id === a.candidateId);
-    if (c?.feeKnown === false) unknowns.push(`${c.name}: fee unknown`);
-    if (c?.availabilityKnown === false || c?.verified === false)
-      unknowns.push(`${c.name}: availability/terms unconfirmed`);
+    if (c?.feeKnown === false || (doc.mode === "live" && c?.feeKnown !== true))
+      unknowns.push(`${c?.name ?? "Unknown participant"}: fee unknown`);
+    if (
+      c?.availabilityKnown === false ||
+      c?.verified === false ||
+      (doc.mode === "live" &&
+        (c?.availabilityKnown !== true || c?.verified !== true))
+    )
+      unknowns.push(
+        `${c?.name ?? "Unknown participant"}: availability/terms unconfirmed`,
+      );
   }
   const total = doc.brief.cohorts.reduce((n, c) => n + c.weight, 0) || 1,
     changes = assignmentChanges(doc, plan);

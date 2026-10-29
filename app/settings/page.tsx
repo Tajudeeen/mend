@@ -12,7 +12,7 @@ export default function Settings() {
     [password, setPassword] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
-    [signedIn, setSignedIn] = useState(false),
+    [signedIn, setSignedIn] = useState<boolean | null>(null),
     [authAction, setAuthAction] = useState<"signin" | "signup">("signin"),
     [checking, setChecking] = useState(false),
     [checks, setChecks] = useState<{
@@ -62,7 +62,9 @@ export default function Settings() {
         <section className="panel config-panel">
           <h3 id="organizer-profile">Your organizer account</h3>
           {signedIn && <OrganizerProfileEditor />}
-          {health.auth === "chatgpt-compatibility" ? (
+          {signedIn === null ? (
+            <p role="status">Checking your account…</p>
+          ) : health.auth === "chatgpt-compatibility" ? (
             <>
               <p>
                 {signedIn
@@ -219,7 +221,7 @@ export default function Settings() {
           )}
         </section>
         <StorageCheck
-          enabled={signedIn && health.auth !== "chatgpt-compatibility"}
+          enabled={signedIn === true && health.auth !== "chatgpt-compatibility"}
         />
         <section className="panel config-panel">
           <h3>Service status</h3>

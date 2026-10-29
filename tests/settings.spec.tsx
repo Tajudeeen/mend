@@ -26,7 +26,7 @@ test("signup waits for confirmation instead of entering the workspace", async ()
   vi.stubGlobal("fetch", fetcher);
   render(<Settings />);
   fireEvent.click(
-    screen.getByRole("button", { name: "New here? Create an account" }),
+    await screen.findByRole("button", { name: "New here? Create an account" }),
   );
   fireEvent.change(screen.getByLabelText("Email"), {
     target: { value: "organizer@mend.test" },
@@ -91,4 +91,23 @@ test("missing auth configuration explains the blocker before asking for credenti
       ([, options]) => !(options as RequestInit | undefined)?.method,
     ),
   ).toBe(true);
+});
+
+test("account forms do not flash a signed-out state while authentication is still loading", async () => {
+  let resolve!: (value: Response) => void;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string) =>
+      url === "/api/auth"
+        ? new Promise<Response>((r) => {
+            resolve = r;
+          })
+        : Promise.resolve(Response.json({ auth: "supabase-configured" })),
+    ),
+  );
+  render(<Settings />);
+  expect(screen.getByText("Checking your account…")).toBeTruthy();
+  expect(screen.queryByLabelText("Password")).toBeNull();
+  resolve(Response.json({ signedIn: false }));
+  expect(await screen.findByLabelText("Password")).toBeTruthy();
 });

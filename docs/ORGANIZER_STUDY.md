@@ -10,3 +10,15 @@ The local instrument at `/study` supports measurement collection. It does not su
 6. Run additional credentialed real-market tasks before claiming that Qloo improves cultural continuity. This instrument measures operational interaction time, not real booking success, attendance, sales or cultural authenticity.
 
 The browser uses event timestamps for elapsed interaction time and wall-clock ISO dates for record context. Records are self-reported local measurements without independent attestation. No study has been completed or outcome improvement asserted in this release.
+
+## Version 2 records and reproducible summaries
+
+The instrument now records participant role explicitly: event organizer, builder or automated test. It defaults to builder. Stop a trial with **Stop this trial and record it as unfinished** to retain its elapsed time and rejected attempts as `abandoned`. Downloading during an active trial includes an `in_progress` snapshot. Neither state is counted as a completed trial. Unsaved records are in memory and are lost on reload, as the page now states explicitly.
+
+Download distinct JSON session records and run:
+
+```sh
+node --experimental-strip-types scripts/evaluation/organizer-study.ts path/to/session-a.json path/to/session-b.json
+```
+
+The summary validates v2 records, consent, method order, timestamps and feasible completed repairs. Duplicate session IDs are rejected. It reports unfinished trials and failed submissions, separates builder/automated records from organizer sessions, retains paired raw times and trial-order counts, and reports the median paired time difference only for completed organizer pairs. With no organizer pairs it returns `null`, never a fabricated benefit. Role and records remain self-reported, not an independently verified organizer study. V1 files retain their historical meaning and are not silently upgraded or counted as v2 organizer evidence.

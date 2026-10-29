@@ -2547,3 +2547,8 @@ html {
   width: 44px;
   height: 44px;
 }
+
+.phone-review-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}

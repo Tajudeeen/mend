@@ -117,7 +117,7 @@ test("timed organizer trial rejects a withdrawn act, keeps running and records g
   );
   time = 17000;
   clickAt("Check and submit manual repair", time);
-  await waitFor(() => expect(screen.getByText("16.0 seconds")).toBeTruthy());
+  await waitFor(() => expect(screen.getByText(/16\.0 seconds/)).toBeTruthy());
   expect(
     screen.getByText(/2 submission attempts \/ 1 failed checks/),
   ).toBeTruthy();

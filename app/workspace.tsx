@@ -1271,7 +1271,10 @@ export default function Workspace({
                           </small>
                         </td>
                         <td>
-                          {c.feeKnown === false ? "Fee unknown" : money(c.fee)}
+                          {c.feeKnown === false ||
+                          (doc.mode === "live" && c.feeKnown !== true)
+                            ? "Fee unknown"
+                            : money(c.fee)}
                           <small>{c.power} kW</small>
                         </td>
                         <td>
@@ -1284,7 +1287,9 @@ export default function Workspace({
                             {c.verified ? "Confirmed" : "Unconfirmed"}
                           </span>
                           <small>
-                            {c.availabilityKnown === false
+                            {c.availabilityKnown === false ||
+                            (doc.mode === "live" &&
+                              c.availabilityKnown !== true)
                               ? "Availability unknown"
                               : c.available
                                 ? "Available, organizer supplied"
@@ -1355,7 +1360,10 @@ export default function Workspace({
                   <span className="eyebrow">
                     {zone ? "SELECTED ZONE" : "YOUR SITE"}
                   </span>
-                  <h3>{zone?.name ?? "Five spaces. One gathering."}</h3>
+                  <h3>
+                    {zone?.name ??
+                      `${doc.zones.length} ${doc.zones.length === 1 ? "space" : "spaces"}. One gathering.`}
+                  </h3>
                   {zone ? (
                     <>
                       <div className="zone-facts">
@@ -1408,9 +1416,11 @@ export default function Workspace({
                     </p>
                   )}
                   <div className="info-note">
-                    Site capacities are sample assumptions. This map
-                    doesn&apos;t certify access routes, sound levels or event
-                    safety.
+                    {demo
+                      ? "Site capacities are sample assumptions."
+                      : "Site capacities are organizer-supplied and need venue confirmation."}{" "}
+                    This map doesn&apos;t certify access routes, sound levels or
+                    event safety.
                   </div>
                 </section>
               </div>
@@ -2169,8 +2179,8 @@ export default function Workspace({
                   name: editor.name,
                   category: editor.category,
                   fee: editor.fee,
-                  feeKnown: editor.feeKnown ?? true,
-                  availabilityKnown: editor.availabilityKnown ?? true,
+                  feeKnown: editor.feeKnown ?? false,
+                  availabilityKnown: editor.availabilityKnown ?? false,
                   width: editor.width ?? 2,
                   depth: editor.depth ?? 2,
                   tags: editor.tags ?? [],
@@ -2244,7 +2254,7 @@ export default function Workspace({
             <label className="check-field">
               <input
                 type="checkbox"
-                checked={editor.feeKnown ?? true}
+                checked={editor.feeKnown ?? false}
                 onChange={(e) =>
                   setEditor({ ...editor, feeKnown: e.target.checked })
                 }
@@ -2254,7 +2264,7 @@ export default function Workspace({
             <label className="check-field">
               <input
                 type="checkbox"
-                checked={editor.availabilityKnown ?? true}
+                checked={editor.availabilityKnown ?? false}
                 onChange={(e) =>
                   setEditor({ ...editor, availabilityKnown: e.target.checked })
                 }
