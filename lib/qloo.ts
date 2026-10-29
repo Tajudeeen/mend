@@ -1,4 +1,4 @@
-import { digest } from "./integrity.ts";
+import { canonicalDigest } from "./integrity.ts";
 export { digest } from "./integrity.ts";
 import { culturalRefs, culturalPoolKey } from "./culture.ts";
 import { z } from "zod";
@@ -248,7 +248,8 @@ export async function collect(
     at: new Date().toISOString(),
     endpoint: "/v2/insights",
     params,
-    responseHash: await digest(body),
+    responseHash: await canonicalDigest(body),
+    hashAlgorithm: "sha256-canonical-json-v2",
     rawResponse: body,
     entities,
     explainability: {
@@ -315,7 +316,8 @@ export async function discover(
     id: crypto.randomUUID(),
     at: new Date().toISOString(),
     params,
-    responseHash: await digest(raw),
+    responseHash: await canonicalDigest(raw),
+    hashAlgorithm: "sha256-canonical-json-v2",
     rawResponse: raw,
     entities: entities
       .map((e) => entitySchema.parse(e))

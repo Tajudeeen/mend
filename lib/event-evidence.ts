@@ -1,5 +1,5 @@
 import type { EventDoc } from "./model.ts";
-import { digest } from "./integrity.ts";
+import { responseDigest } from "./integrity.ts";
 import { culturalPoolKey } from "./culture.ts";
 import { eventReadiness } from "./readiness.ts";
 
@@ -47,7 +47,8 @@ export async function inspectEventEvidence(doc: EventDoc) {
       let hashMatches = false;
       try {
         hashMatches =
-          (await digest(receipt.rawResponse)) === receipt.responseHash;
+          (await responseDigest(receipt.rawResponse, receipt.hashAlgorithm)) ===
+          receipt.responseHash;
       } catch {
         /* Invalid body remains failed. */
       }
@@ -56,6 +57,7 @@ export async function inspectEventEvidence(doc: EventDoc) {
         at: receipt.at,
         origin: receipt.origin ?? null,
         endpoint: receipt.endpoint,
+        hashAlgorithm: receipt.hashAlgorithm ?? "sha256-json-v1",
         hashMatches,
         affinitiesMatch,
         currentContext,

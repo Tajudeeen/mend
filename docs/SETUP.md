@@ -26,11 +26,11 @@ The endpoint must have no embedded credentials, query string or fragment. MEND r
 
 ### Selected provider: Groq
 
-The selected configuration is Groq's OpenAI-compatible Chat Completions API:
+The selected configuration, verified for a bounded missing-input investigation, is Groq's OpenAI-compatible Chat Completions API:
 
 ```env
 LLM_BASE_URL=https://api.groq.com/openai/v1
-LLM_MODEL=openai/gpt-oss-20b
+LLM_MODEL=qwen/qwen3.8-27b
 LLM_API_KEY=YOUR_GROQ_KEY
 ```
 
@@ -38,7 +38,7 @@ Create the key at https://console.groq.com/keys and enter it only in Vercel's Pr
 
 The adapter blocks recognizable OpenAI keys on Groq and Groq keys on OpenAI before sending a request. Groq GPT-OSS requests use low reasoning effort and sequential tool calls. The isolated connection probe allows 1,024 output tokens to include reasoning; other model probes remain at 128. The agent's 8-step/16-tool budget and human-approval requirement remain unchanged.
 
-Groq's free plan currently lists this model with per-minute and daily limits. Multi-step agent runs can hit those limits; availability through judging still needs verification. The host requires meaningful Qloo-integrated agentic behavior, not a particular LLM vendor. Sources checked October 28, 2026: https://console.groq.com/docs/rate-limits, https://console.groq.com/docs/openai, https://console.groq.com/docs/reasoning and https://qloo.devpost.com/rules. The owner reported that the deployed Groq tool-call check passed on October 28. A complete live event recovery remains unverified.
+Groq's free plan currently lists this model with per-minute and daily limits. Multi-step agent runs can hit those limits; availability through judging still needs verification. The host requires meaningful Qloo-integrated agentic behavior, not a particular LLM vendor. Sources checked October 28, 2026: https://console.groq.com/docs/rate-limits, https://console.groq.com/docs/openai, https://console.groq.com/docs/reasoning and https://qloo.devpost.com/rules. The deployed Qwen probe and a three-tool missing-input investigation passed during the October 28–29 session. GPT-OSS trials and an unavailable Llama ID remain recorded as failed; Qwen was selected from the authenticated catalogue. A complete approved event recovery remains unverified.
 
 ## 3. Finish Supabase and Vercel configuration
 

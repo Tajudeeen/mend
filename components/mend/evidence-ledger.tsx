@@ -141,11 +141,22 @@ export default function EvidenceLedger({
               : "Receipt checks failed. Inspect the flagged sources before relying on this snapshot."}
           </p>
           {check.duplicateIds && <p>Duplicate receipt IDs found.</p>}
+          {check.receipts.some(
+            (r) => !r.hashMatches && r.hashAlgorithm === "sha256-json-v1",
+          ) && (
+            <p className="info-note">
+              A legacy hash depends on JSON key order, which database storage
+              may change. Recollect a fresh batch for a versioned canonical
+              hash. Historical receipts are not rewritten or automatically
+              marked consistent.
+            </p>
+          )}
           <ul>
             {check.receipts.map((r, i) => (
               <li key={`${r.id}-${i}`}>
-                {r.id} · hash {r.hashMatches ? "matches" : "FAILED"} ·
-                affinities {r.affinitiesMatch ? "match body" : "FAILED"} ·{" "}
+                {r.id} · {r.hashAlgorithm} · hash{" "}
+                {r.hashMatches ? "matches" : "FAILED"} · affinities{" "}
+                {r.affinitiesMatch ? "match body" : "FAILED"} ·{" "}
                 {r.currentContext
                   ? "current context"
                   : "old or incomplete context"}{" "}

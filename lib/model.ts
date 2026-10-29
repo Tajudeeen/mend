@@ -82,6 +82,7 @@ export type Evidence = {
   endpoint: string;
   params: Record<string, string>;
   responseHash: string;
+  hashAlgorithm?: "sha256-json-v1" | "sha256-canonical-json-v2";
   rawResponse: unknown;
   entities: Record<string, number>;
   explainability: unknown;

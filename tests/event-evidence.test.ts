@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { sampleEvent } from "../lib/seed.ts";
 import { inspectEventEvidence } from "../lib/event-evidence.ts";
 import { culturalPoolKey } from "../lib/culture.ts";
-import { digest } from "../lib/integrity.ts";
+import { digest, canonicalDigest } from "../lib/integrity.ts";
 
 async function fixture() {
   const doc = sampleEvent();
@@ -84,4 +84,24 @@ test("duplicate receipts and edited audience or roster references remain visible
   const duplicates = await inspectEventEvidence(doc);
   assert.equal(duplicates.duplicateIds, true);
   assert.equal(duplicates.consistent, false);
+});
+test("event receipt inspection verifies canonical responses after storage reorders keys", async () => {
+  const doc = await fixture();
+  const receipt = doc.evidence[0];
+  receipt.hashAlgorithm = "sha256-canonical-json-v2";
+  receipt.responseHash = await canonicalDigest(receipt.rawResponse);
+  const body = receipt.rawResponse as {
+    results: { entities: { entity_id: string; query: { affinity: number } }[] };
+  };
+  receipt.rawResponse = {
+    results: {
+      entities: body.results.entities.map((entity) => ({
+        query: entity.query,
+        entity_id: entity.entity_id,
+      })),
+    },
+  };
+  const result = await inspectEventEvidence(doc);
+  assert.equal(result.receipts[0].hashMatches, true);
+  assert.equal(result.receipts[0].affinitiesMatch, true);
 });

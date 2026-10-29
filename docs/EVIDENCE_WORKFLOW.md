@@ -15,6 +15,8 @@ The public `/demo` route is an isolated temporary sample. Its scores and interac
 
 ## Product boundaries
 
+New Qloo receipts use `sha256-canonical-json-v2`: MEND sorts object keys recursively before JSON serialization and SHA-256 hashing, while preserving array order and values. This survives PostgreSQL JSONB key reordering. Receipts with no version keep their original `sha256-json-v1` semantics. A mismatching legacy hash stays failed; recollect a new batch instead of rewriting history or relabelling it as verified. This is stored semantic JSON integrity, not a signature or a hash of original HTTP bytes.
+
 Sample interaction logs are labelled as sample activity. Saved synthetic events remain synthetic. A configured key is not evidence of a successful request. Model run records describe stored application execution, not an independent attestation of model authorship. Qloo ranks do not prove booking availability, attendance, revenue or organizer impact. No global "verified build" badge replaces these individual checks.
 
 Workspace navigation updates the URL, marks the active section, moves focus to the content and scrolls to the top. Reduced-motion preferences use immediate scrolling. The mobile menu closes on selection, backdrop click or Escape. Full page links retain document navigation across the hosting/auth boundary. Operational states reuse the existing paper, ink, green, lime and rust palette.

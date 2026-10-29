@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { digest } from "./integrity.ts";
+import { responseDigest } from "./integrity.ts";
 
 export const maxReportBytes = 5_000_000;
 export const verificationLimit =
@@ -17,6 +17,9 @@ const schema = z.object({
         id: z.string().min(1).max(200),
         provider: z.literal("qloo"),
         responseHash: z.string().regex(/^[a-f0-9]{64}$/),
+        hashAlgorithm: z
+          .enum(["sha256-json-v1", "sha256-canonical-json-v2"])
+          .optional(),
         rawResponse: z.record(z.unknown()),
       }),
     )
@@ -52,7 +55,10 @@ export async function verifyReport(text: string) {
   for (const receipt of receipts) {
     if (!report.evidenceIds.includes(receipt.id))
       throw new Error("Unreferenced source receipt.");
-    if ((await digest(receipt.rawResponse)) !== receipt.responseHash)
+    if (
+      (await responseDigest(receipt.rawResponse, receipt.hashAlgorithm)) !==
+      receipt.responseHash
+    )
       throw new Error(
         "A source response hash does not match. The stored response may have changed.",
       );
