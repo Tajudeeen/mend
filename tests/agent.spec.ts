@@ -274,3 +274,103 @@ test("generating a proposal without validation cannot produce an approval-ready 
   expect(out.event.proposal?.options.length).toBeGreaterThan(0);
   expect(out.run.state).toBe("needs_information");
 });
+
+test("Groq full planning reuses checked live receipts and stages one option through review without applying it", async () => {
+  const { canonicalDigest } = await import("../lib/integrity");
+  const { culturalPoolKey } = await import("../lib/culture");
+  const doc = sampleEvent();
+  doc.mode = "live";
+  doc.candidates.forEach((c) => {
+    c.entityId = c.id;
+    c.verified = true;
+  });
+  for (const co of doc.brief.cohorts) {
+    co.seeds = [{ id: crypto.randomUUID(), name: "Contract interest" }];
+    for (const kind of ["artist", "vendor"] as const) {
+      const entities = Object.fromEntries(
+        doc.candidates
+          .filter((c) => c.kind === kind)
+          .map((c) => [c.id, c.affinity[co.id]]),
+      );
+      const rawResponse = {
+        results: {
+          entities: Object.entries(entities).map(([entity_id, affinity]) => ({
+            entity_id,
+            query: { affinity },
+          })),
+        },
+      };
+      doc.evidence.push({
+        id: crypto.randomUUID(),
+        provider: "qloo",
+        origin: "https://hackathon.api.qloo.com",
+        at: new Date().toISOString(),
+        endpoint: "/v2/insights",
+        params: { "signal.interests.entities": co.seeds[0].id },
+        responseHash: await canonicalDigest(rawResponse),
+        hashAlgorithm: "sha256-canonical-json-v2",
+        rawResponse,
+        entities,
+        cohortId: co.id,
+        kind,
+        poolKey: culturalPoolKey(doc.candidates, kind),
+        explainability: {},
+        normalization: "contract fixture, not live proof",
+      });
+    }
+  }
+  const optionId = propose(doc, { type: "cancellation", candidateId: "a1" })
+    .options[0].id;
+  const calls: [string, unknown][] = [
+    ["get_event_plan", {}],
+    ["get_event_constraints", {}],
+    [
+      "generate_feasible_allocations",
+      { scenario: { type: "cancellation", candidateId: "a1" } },
+    ],
+    ["validate_hard_constraints", { optionId }],
+    ["evaluate_cultural_continuity", { optionId }],
+    ["prepare_approval_request", {}],
+    [
+      "finish_investigation",
+      {
+        status: "awaiting_approval",
+        claims: [
+          {
+            kind: "operational",
+            text: "A conditional proposal is ready for human review.",
+            evidenceIds: [],
+          },
+        ],
+      },
+    ],
+  ];
+  let index = 0;
+  const fetcher = vi.fn(async (url, options) => {
+    expect(String(url)).toContain("api.groq.com");
+    const wire = JSON.parse(options.body);
+    const [name, args] = calls[index++];
+    if (index === 3)
+      expect(
+        wire.tools.map((t: { function: { name: string } }) => t.function.name),
+      ).not.toContain("get_cultural_insights");
+    if (index >= 4) expect(wire.tool_choice.function.name).toBe(name);
+    return response(null, [
+      {
+        id: `staged-${index}`,
+        type: "function",
+        function: { name, arguments: JSON.stringify(args) },
+      },
+    ]);
+  });
+  vi.stubGlobal("fetch", fetcher);
+  const result = await investigate(doc, "Repair this controlled fixture", {
+    LLM_API_KEY: "gsk_contract_test_not_real",
+    LLM_BASE_URL: "https://api.groq.com/openai/v1",
+    LLM_MODEL: "qwen/qwen3.8-27b",
+  });
+  expect(result.run.state).toBe("awaiting_approval");
+  expect(fetcher).toHaveBeenCalledTimes(7);
+  expect(result.event.plan).toEqual(doc.plan);
+  expect(result.event.evidence).toEqual(doc.evidence);
+});

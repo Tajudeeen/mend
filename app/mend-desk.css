@@ -2552,3 +2552,23 @@ html {
   overflow-x: auto;
   max-width: 100%;
 }
+
+@media (max-width: 760px) {
+  .sidebar {
+    width: min(300px, calc(100vw - 48px));
+  }
+  .sidebar.open {
+    z-index: 60;
+  }
+  .workspace-nav-backdrop {
+    z-index: 59;
+  }
+  .desk-nav-close {
+    top: 12px;
+    right: 12px;
+    min-width: 44px;
+    min-height: 44px;
+    background: #3b4b36;
+    border: 1px solid #71806b;
+  }
+}
