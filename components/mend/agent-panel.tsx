@@ -107,6 +107,13 @@ export default function AgentPanel({
               <span>{i + 1}</span>
               <section>
                 <h4>{s.tool.replaceAll("_", " ")}</h4>
+                <small>
+                  {s.trigger === "server"
+                    ? "Deterministic server check"
+                    : s.trigger === "model"
+                      ? "Model-requested tool"
+                      : "Trigger not recorded for this older run"}
+                </small>
                 <details>
                   <summary>Inspect structured result</summary>
                   <pre>{JSON.stringify(s.output, null, 2)}</pre>
@@ -114,6 +121,12 @@ export default function AgentPanel({
               </section>
             </div>
           ))}
+          {run.explanation?.length ? (
+            <p className="fineprint">
+              Model explanation. Check its statements against the structured
+              results above.
+            </p>
+          ) : null}
           {run.explanation?.map((c, i) => (
             <p key={i}>
               {c.text}{" "}

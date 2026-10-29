@@ -1,7 +1,7 @@
 "use client";
 import type { EventDoc } from "@/lib/model";
 import Link from "./page-link";
-import { reportEvidence } from "@/lib/report-evidence";
+import { reportEvidence, exportRecoveryReport } from "@/lib/report-evidence";
 import { Download, ArrowRight } from "lucide-react";
 export default function Reports({ doc }: { doc: EventDoc }) {
   return (
@@ -71,20 +71,12 @@ export default function Reports({ doc }: { doc: EventDoc }) {
             )}
             <details className="trace">
               <summary>Source evidence and assignments</summary>
+              <p className="fineprint">
+                Complete report JSON, identical to the download. Inspect or copy
+                it here if a browser blocks downloads.
+              </p>
               <pre>
-                {JSON.stringify(
-                  {
-                    fingerprint: r.fingerprint,
-                    before: r.before,
-                    after: r.after,
-                    evidence: reportEvidence(r, doc.evidence).receipts,
-                    missingEvidenceIds: reportEvidence(r, doc.evidence)
-                      .missingIds,
-                    decision: r.decisionSnapshot,
-                  },
-                  null,
-                  2,
-                )}
+                {JSON.stringify(exportRecoveryReport(r, doc.evidence), null, 2)}
               </pre>
             </details>
             {reportEvidence(r, doc.evidence).missingIds.length > 0 && (
@@ -101,13 +93,7 @@ export default function Reports({ doc }: { doc: EventDoc }) {
                     new Blob(
                       [
                         JSON.stringify(
-                          {
-                            ...r,
-                            evidenceSnapshot: reportEvidence(r, doc.evidence)
-                              .receipts,
-                            missingEvidenceIds: reportEvidence(r, doc.evidence)
-                              .missingIds,
-                          },
+                          exportRecoveryReport(r, doc.evidence),
                           null,
                           2,
                         ),

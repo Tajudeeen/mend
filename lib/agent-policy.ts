@@ -64,11 +64,13 @@ export function recordStep(
   tool: string,
   input: unknown,
   output: unknown,
+  trigger: "model" | "server" = "model",
 ) {
   if (!agentTools.includes(tool as (typeof agentTools)[number]))
     throw new Error("Tool is outside the allowed registry.");
   if (run.steps.length >= 16) throw new Error("Agent tool budget exhausted.");
   const step: AgentStep = {
+    trigger,
     id: crypto.randomUUID(),
     tool,
     input,

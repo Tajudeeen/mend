@@ -2572,3 +2572,21 @@ html {
     border: 1px solid #71806b;
   }
 }
+@media (max-width: 760px) {
+  .sidebar {
+    visibility: hidden;
+  }
+  .sidebar.open {
+    visibility: visible;
+  }
+}
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .btn {
+    max-width: 100%;
+    white-space: normal;
+    min-height: 44px;
+  }
+}

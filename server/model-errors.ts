@@ -20,7 +20,10 @@ export class ModelProviderKeyMismatch extends Error {
 
 // Provider messages, headers and URLs may contain secrets or echoed user data.
 // Inspect bounded structured fields and return only fixed application messages.
-export function modelFailure(error: unknown): {
+export function modelFailure(
+  error: unknown,
+  depth = 0,
+): {
   code: ModelFailureCode;
   detail: string;
 } {
@@ -39,6 +42,30 @@ export function modelFailure(error: unknown): {
     error && typeof error === "object"
       ? (error as Record<string, unknown>)
       : {};
+  if (
+    [
+      "AI_ToolChoiceViolationError",
+      "AI_InvalidToolInputError",
+      "AI_NoSuchToolError",
+      "AI_ToolCallRepairError",
+    ].includes(String(e.name))
+  )
+    return {
+      code: "tool_generation_failed",
+      detail:
+        "The model did not follow the required tool protocol. No invalid tool call was accepted. Use the structured controls or try a compatible model.",
+    };
+  if (depth < 3) {
+    const nested = [
+      e.cause,
+      ...(Array.isArray(e.errors) ? e.errors.slice(-3) : []),
+    ];
+    for (const value of nested)
+      if (value && typeof value === "object") {
+        const result = modelFailure(value, depth + 1);
+        if (result.code !== "connection_failed") return result;
+      }
+  }
   const status = typeof e.statusCode === "number" ? e.statusCode : undefined;
   let data: unknown = e.data;
   if (

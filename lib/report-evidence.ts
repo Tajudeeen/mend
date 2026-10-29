@@ -13,3 +13,16 @@ export function reportEvidence(report: RecoveryReport, current: Evidence[]) {
     ),
   };
 }
+
+/** One export shape for both the visible JSON and the downloaded file. */
+export function exportRecoveryReport(
+  report: RecoveryReport,
+  current: Evidence[],
+) {
+  const source = reportEvidence(report, current);
+  return {
+    ...report,
+    evidenceSnapshot: source.receipts,
+    missingEvidenceIds: source.missingIds,
+  };
+}

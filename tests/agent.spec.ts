@@ -86,6 +86,17 @@ test.each([
           ]
         : []),
     ] as const;
+    const providerCalls =
+      label === "Groq GPT-OSS"
+        ? calls.filter(
+            ([name]) =>
+              ![
+                "validate_hard_constraints",
+                "evaluate_cultural_continuity",
+                "prepare_approval_request",
+              ].includes(String(name)),
+          )
+        : calls;
     vi.stubGlobal(
       "fetch",
       vi.fn(async (_url, options) => {
@@ -106,8 +117,8 @@ test.each([
             ),
           ).toBe(true);
         }
-        if (i < calls.length) {
-          const [name, args] = calls[i++];
+        if (i < providerCalls.length) {
+          const [name, args] = providerCalls[i++];
           return response(
             null,
             [
@@ -345,11 +356,19 @@ test("Groq full planning reuses checked live receipts and stages one option thro
       },
     ],
   ];
+  const providerCalls = calls.filter(
+    ([name]) =>
+      ![
+        "validate_hard_constraints",
+        "evaluate_cultural_continuity",
+        "prepare_approval_request",
+      ].includes(String(name)),
+  );
   let index = 0;
   const fetcher = vi.fn(async (url, options) => {
     expect(String(url)).toContain("api.groq.com");
     const wire = JSON.parse(options.body);
-    const [name, args] = calls[index++];
+    const [name, args] = providerCalls[index++];
     if (index === 3)
       expect(
         wire.tools.map((t: { function: { name: string } }) => t.function.name),
@@ -370,7 +389,14 @@ test("Groq full planning reuses checked live receipts and stages one option thro
     LLM_MODEL: "qwen/qwen3.8-27b",
   });
   expect(result.run.state).toBe("awaiting_approval");
-  expect(fetcher).toHaveBeenCalledTimes(7);
+  expect(fetcher).toHaveBeenCalledTimes(4);
+  expect(
+    result.run.steps.filter((s) => s.trigger === "server").map((s) => s.tool),
+  ).toEqual([
+    "validate_hard_constraints",
+    "evaluate_cultural_continuity",
+    "prepare_approval_request",
+  ]);
   expect(result.event.plan).toEqual(doc.plan);
   expect(result.event.evidence).toEqual(doc.evidence);
 });

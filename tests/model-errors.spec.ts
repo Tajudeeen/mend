@@ -55,3 +55,22 @@ test("timeouts and missing tool calls remain distinct from unknown failures", ()
   expect(modelFailure(new Error("private-key")).code).toBe("connection_failed");
   expect(modelFailure(null).code).toBe("connection_failed");
 });
+
+test("tool protocol and wrapped provider failures are classified without leaking raw content", () => {
+  expect(
+    modelFailure({
+      name: "AI_ToolChoiceViolationError",
+      message: "private-provider-key",
+    }).code,
+  ).toBe("tool_generation_failed");
+  const result = modelFailure({
+    cause: {
+      statusCode: 429,
+      responseBody: JSON.stringify({
+        error: { code: "insufficient_quota", message: "private-provider-key" },
+      }),
+    },
+  });
+  expect(result.code).toBe("quota_exhausted");
+  expect(JSON.stringify(result)).not.toContain("private-provider-key");
+});

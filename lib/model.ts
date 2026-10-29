@@ -255,6 +255,7 @@ export type RecoveryReport = {
   };
 };
 export type AgentStep = {
+  trigger?: "model" | "server";
   id: string;
   tool: string;
   input: unknown;

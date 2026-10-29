@@ -171,7 +171,9 @@ test("registration-free demo completes cancellation, explicit approval and repor
   fireEvent.click(screen.getByRole("button", { name: /View approved report/ }));
   expect(screen.getByText("A decision you can explain.")).toBeTruthy();
   expect(
-    screen.getByText(/organizer approved.*assignment changes/i),
+    screen.getByRole("heading", {
+      name: /organizer approved.*assignment changes/i,
+    }),
   ).toBeTruthy();
   expect(screen.getByRole("button", { name: /Download report/i })).toBeTruthy();
 });
